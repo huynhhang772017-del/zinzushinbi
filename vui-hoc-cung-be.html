@@ -222,33 +222,76 @@ const numChoices=(c,sp)=>{sp=sp||5;const s=new Set([c]);while(s.size<4){const d=
 // Lớp 2 (Phương Vy)
 const TOPICS_VY={
   math:[
-    {id:'g2-as',e:'➕',t:'Cộng & Trừ',d:'Đếm thanh chục & ô đơn vị',
-     ex:[{p:'Đếm tổng số ô:',kind:'addsub',n1:23,op:'+',n2:14,steps:['Bên trái: 2 thanh chục + 3 ô = 23.','Bên phải: 1 thanh chục + 4 ô = 14.','Cộng: 2+1 = 3 thanh chục, 3+4 = 7 ô.','Tổng: 3 thanh + 7 ô = 37.'],a:'37'}],
-     gen:()=>{const o=[];for(let i=0;i<5;i++){const add=Math.random()<.5;const a=rand(10,40);const b=add?rand(5,Math.min(40,90-a)):rand(2,a-2);const c=add?a+b:a-b;o.push({prompt:'Đếm và tính:',kind:'addsub',n1:a,op:add?'+':'−',n2:b,...numChoices(c),explanation:`${a} ${add?'+':'−'} ${b} = ${c}. Đếm thanh chục và ô đơn vị bên hình.`})}return o}},
-    {id:'g2-clk',e:'🕐',t:'Xem đồng hồ',d:'Nhìn hình, đọc giờ',
-     ex:[{p:'Đồng hồ chỉ mấy giờ?',kind:'clock',time:'3:30',steps:['Kim ngắn (kim giờ) ở giữa 3 và 4 → giờ là 3.','Kim dài (kim phút) chỉ vào số 6 → 6 × 5 = 30 phút.','Đồng hồ chỉ 3 giờ 30 phút.'],a:'3 giờ 30 phút'}],
-     gen:()=>{const o=[];for(let i=0;i<5;i++){const h=rand(1,12),m=[0,15,30,45][rand(0,3)];const c=`${h} giờ ${m===0?'đúng':m+' phút'}`;const ds=new Set();while(ds.size<3){const dh=rand(1,12),dm=[0,15,30,45][rand(0,3)],s=`${dh} giờ ${dm===0?'đúng':dm+' phút'}`;if(s!==c)ds.add(s)}const ch=shuffle([c,...ds]);o.push({prompt:'Đồng hồ chỉ mấy giờ?',kind:'clock',time:`${h}:${String(m).padStart(2,'0')}`,choices:ch,answerIndex:ch.indexOf(c),explanation:`Kim ngắn chỉ ${h}, kim dài chỉ ${m===0?'12 (đúng giờ)':'số '+(m/5)+' = '+m+' phút'} → ${c}.`})}return o}},
-    {id:'g2-tt',e:'✖️',t:'Cửu chương 2, 5, 10',d:'Nhân nhanh',
-     ex:[{p:'5 × 7 = ?',steps:['Bảng cửu chương 5: đếm 5, 10, 15, 20, 25, 30, 35.','Lần thứ 7 là 35.','Vậy 5 × 7 = 35.'],a:'35'}],
-     gen:()=>{const o=[];for(let i=0;i<5;i++){const t=[2,5,10][rand(0,2)],k=rand(2,10),c=t*k;o.push({prompt:`${t} × ${k} = ?`,...numChoices(c,8),explanation:`${t} × ${k} = ${c}. Mẹo: ${t===10?'nhân 10 thì thêm số 0':t===5?'nhân 5 = nhân 10 ÷ 2':'nhân 2 = cộng đôi'}.`})}return o}},
-    {id:'g2-len',e:'📏',t:'Đo độ dài',d:'cm và m',
-     ex:[{p:'3 m 25 cm = ? cm',steps:['Quy tắc: 1 m = 100 cm.','3 m = 3 × 100 = 300 cm.','300 + 25 = 325 cm.'],a:'325 cm'}],
-     gen:()=>{const o=[];for(let i=0;i<5;i++){const m=rand(1,5),cm=rand(0,99),c=m*100+cm;o.push({prompt:`${m} m ${cm} cm = ? cm`,...numChoices(c,30),explanation:`${m} m = ${m*100} cm. Tổng: ${m*100} + ${cm} = ${c} cm.`})}return o}},
-    {id:'g2-word',e:'📝',t:'Bài toán nhiều bước',d:'Singapore-style 2 bước',adv:true,
-     ex:[{p:'Lan có 25 viên kẹo. Mẹ cho thêm 18 viên. Lan cho em 12 viên. Còn lại?',steps:['Bước 1 (cộng): 25 + 18 = 43.','Bước 2 (trừ): 43 − 12 = 31.','Đáp số: 31 viên.'],a:'31 viên'}],
-     gen:()=>{const items=['viên kẹo','quyển vở','cây bút','quả táo'];const names=['Lan','Minh','An','Mai'];const o=[];for(let i=0;i<5;i++){const item=items[rand(0,items.length-1)];const name=names[rand(0,names.length-1)];const start=rand(15,50),add=rand(8,30),give=rand(5,Math.min(20,start+add-3));const c=start+add-give;o.push({prompt:`${name} có ${start} ${item}. Bố cho thêm ${add}. ${name} cho bạn ${give}. Còn lại bao nhiêu?`,...numChoices(c,8),explanation:`Bước 1: ${start}+${add}=${start+add}. Bước 2: ${start+add}−${give}=${c} ${item}.`})}return o}},
-    {id:'g2-cmp',e:'⚖️',t:'So sánh số (>,<,=)',d:'Lớn hơn, bé hơn',
-     ex:[{p:'Điền dấu: 47 ___ 52',steps:['So 4 chục với 5 chục: 4 < 5.','Hàng chục bé hơn → 47 < 52.'],a:'<'}],
-     gen:()=>{const o=[];for(let i=0;i<5;i++){const a=rand(10,99),b=rand(10,99);const correct=a>b?'>':a<b?'<':'=';const ch=shuffle(['>','<','=']);o.push({prompt:`Điền dấu: ${a} ___ ${b}`,choices:ch,answerIndex:ch.indexOf(correct),explanation:`${a} ${correct} ${b}.`})}return o}},
-    {id:'g2-perim',e:'🔲',t:'Chu vi hình',d:'HCN và HV',
-     ex:[{p:'Hình vuông cạnh 5 cm. Chu vi = ?',steps:['Chu vi HV = cạnh × 4.','5 × 4 = 20.','Đáp số: 20 cm.'],a:'20 cm'}],
-     gen:()=>{const o=[];for(let i=0;i<5;i++){const isSq=Math.random()<.5;if(isSq){const s=rand(3,15),c=s*4;o.push({prompt:`Hình vuông cạnh ${s} cm. Chu vi = ? cm`,...numChoices(c,8),explanation:`Chu vi HV = ${s} × 4 = ${c} cm.`})}else{const a=rand(3,15),b=rand(3,15),c=2*(a+b);o.push({prompt:`HCN dài ${a} cm, rộng ${b} cm. Chu vi = ? cm`,...numChoices(c,10),explanation:`Chu vi HCN = (${a}+${b})×2 = ${c} cm.`})}}return o}},
-    {id:'g2-money',e:'💰',t:'Tiền Việt Nam',d:'Cộng/trừ đồng',
-     ex:[{p:'Mẹ cho 20.000đ, mua kem hết 8.000đ. Còn lại?',steps:['Phép trừ: 20.000 − 8.000 = 12.000.','Đáp số: 12.000 đồng.'],a:'12.000đ'}],
-     gen:()=>{const items=['kem','kẹo','bánh','bút','sách'];const o=[];for(let i=0;i<5;i++){const it=items[rand(0,items.length-1)];const have=rand(10,30),cost=rand(3,have-3);const c=have-cost;const ds=new Set([c]);while(ds.size<4){const d=rand(-4,4);if(c+d>0&&c+d!==c)ds.add(c+d)}const ch=shuffle([...ds]).map(x=>x+'.000đ');o.push({prompt:`Mẹ cho ${have}.000đ, mua ${it} hết ${cost}.000đ. Còn lại?`,choices:ch,answerIndex:ch.indexOf(c+'.000đ'),explanation:`${have} − ${cost} = ${c}. Còn ${c}.000đ.`})}return o}},
-    {id:'g2-time',e:'⏰',t:'Thời gian',d:'Bao lâu trôi qua?',adv:true,
-     ex:[{p:'Bắt đầu 8:00, kết thúc 9:30. Bao lâu?',steps:['Từ 8:00 đến 9:00 là 1 giờ.','Từ 9:00 đến 9:30 là 30 phút.','Tổng: 1 giờ 30 phút = 90 phút.'],a:'1 giờ 30 phút'}],
-     gen:()=>{const o=[];for(let i=0;i<5;i++){const h1=rand(7,10),m1=[0,15,30][rand(0,2)];const dh=rand(0,2),dm=[0,15,30,45][rand(0,3)];const totMin=dh*60+dm;if(totMin===0){i--;continue}const h2=h1+dh+Math.floor((m1+dm)/60);const m2=(m1+dm)%60;const cText=`${dh} giờ ${dm} phút`;const ds=new Set([cText]);while(ds.size<4){const x=rand(0,3),y=[0,15,30,45][rand(0,3)];const t=`${x} giờ ${y} phút`;if(t!==cText)ds.add(t)}const ch=shuffle([...ds]);o.push({prompt:`Bắt đầu ${h1}:${String(m1).padStart(2,'0')}, kết thúc ${h2}:${String(m2).padStart(2,'0')}. Bao lâu?`,choices:ch,answerIndex:ch.indexOf(cText),explanation:`Khoảng thời gian: ${cText} (= ${totMin} phút).`})}return o}}
+    // === HỌC PHẦN 1 — Bài 1.1 → 3.3 (Cơ bản) ===
+    {id:'v2-1.1',e:'🔢',t:'Hàng trăm-chục-đơn vị',d:'Giá trị chữ số (số đến 1000)',
+     ex:[{p:'Số 327 có giá trị chữ số 3 là?',steps:['327 = 300 + 20 + 7','Chữ số 3 ở hàng trăm.','Giá trị: 300.'],a:'300'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const h=rand(1,9),t=rand(0,9),u=rand(1,9);const n=h*100+t*10+u;const pos=rand(0,2);const dig=[u,t,h][pos];const val=[u,t*10,h*100][pos];const ans=String(val);const ds=new Set([ans]);[u,t*10,h*100].forEach(v=>{if(String(v)!==ans)ds.add(String(v))});while(ds.size<4)ds.add(String(rand(1,9)*[1,10,100][rand(0,2)]));const ch=shuffle([...ds]).slice(0,4);if(!ch.includes(ans))ch[0]=ans;o.push({prompt:`Số ${n} có giá trị chữ số ${dig} là?`,choices:ch,answerIndex:ch.indexOf(ans),explanation:`${n} = ${h*100}+${t*10}+${u}. Chữ số ${dig} ở hàng ${pos===2?'trăm':pos===1?'chục':'đơn vị'} → ${val}.`})}return o}},
+    {id:'v2-1.2',e:'⚖️',t:'So sánh số đến 1000',d:'Digit-by-digit (>, <, =)',
+     ex:[{p:'872 ___ 782',steps:['So hàng trăm: 8 > 7.','872 > 782.'],a:'>'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const a=rand(100,999),b=rand(100,999);const c=a>b?'>':a<b?'<':'=';const ch=shuffle(['>','<','=']);o.push({prompt:`Điền dấu: ${a} ___ ${b}`,choices:ch,answerIndex:ch.indexOf(c),explanation:`${a} ${c} ${b}.`})}return o}},
+    {id:'v2-1.3',e:'🎯',t:'Ước lượng & làm tròn',d:'Đến chục/trăm gần nhất',
+     ex:[{p:'Làm tròn 243 đến hàng chục',steps:['Đơn vị 3 < 5 → giữ nguyên hàng chục.','243 → 240.'],a:'240'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const n=rand(15,950);const toHund=Math.random()<.4;const r=toHund?Math.round(n/100)*100:Math.round(n/10)*10;const ds=new Set([r]);while(ds.size<4){const d=rand(-3,3)*(toHund?100:10);if(r+d>0&&r+d!==r)ds.add(r+d)}const ch=shuffle([...ds]).map(String);o.push({prompt:`Làm tròn ${n} đến hàng ${toHund?'trăm':'chục'}`,choices:ch,answerIndex:ch.indexOf(String(r)),explanation:`${n} → ${r}.`})}return o}},
+    {id:'v2-2.1',e:'➕',t:'Cộng số 3 chữ số',d:'Tách-Nhóm-Gộp + ước lượng',
+     ex:[{p:'315 + 237 = ?',steps:['Ước lượng: 320+240=560.','Tách: 300+10+5 + 200+30+7.','Nhóm: (300+200)+(10+30)+(5+7) = 500+40+12.','Gộp: 552.'],a:'552'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const a=rand(100,500),b=rand(100,499),c=a+b;o.push({prompt:`${a} + ${b} = ?`,...numChoices(c,30),explanation:`${a}+${b}=${c}. Ước lượng: ${Math.round(a/10)*10}+${Math.round(b/10)*10}=${Math.round(a/10)*10+Math.round(b/10)*10}.`})}return o}},
+    {id:'v2-2.2',e:'➖',t:'Trừ số 3 chữ số',d:'Cột mở rộng + có nhớ',
+     ex:[{p:'452 - 117 = ?',steps:['Ước lượng: 450−120=330.','Nhóm lại: 452=400+40+12.','Trừ: 400+40+12−(100+10+7) = 300+30+5.','Đáp án: 335.'],a:'335'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const a=rand(200,900),b=rand(100,a-50),c=a-b;o.push({prompt:`${a} - ${b} = ?`,...numChoices(c,25),explanation:`${a}−${b}=${c}.`})}return o}},
+    {id:'v2-2.3',e:'💵',t:'Tiền USD',d:'Dollar + cent + thập phân',
+     ex:[{p:'$24 và 12c viết bằng dấu thập phân?',steps:['Dollar trước, cent sau dấu phẩy.','Cent luôn 2 chữ số.','$24,12.'],a:'$24,12'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const d=rand(1,99),c=rand(0,99);const cs=String(c).padStart(2,'0');const ans=`$${d},${cs}`;const ds=new Set([ans]);while(ds.size<4){const dd=rand(1,99),dc=rand(0,99);const v=`$${dd},${String(dc).padStart(2,'0')}`;if(v!==ans)ds.add(v)}const ch=shuffle([...ds]);o.push({prompt:`$${d} và ${c}c viết bằng thập phân?`,choices:ch,answerIndex:ch.indexOf(ans),explanation:`$${d} và ${c}c = $${d},${cs}. Cent luôn 2 chữ số.`})}return o}},
+    {id:'v2-3.2',e:'✖️',t:'Bảng nhân 2, 4, 8',d:'Gấp đôi binary',
+     ex:[{p:'4 × 7 = ?',steps:['Bảng 4: 4,8,12,16,20,24,28.','Lần 7 là 28.','Mẹo: 4×7 = (2×7)×2 = 14×2 = 28.'],a:'28'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const t=[2,4,8][rand(0,2)],k=rand(2,10),c=t*k;o.push({prompt:`${t} × ${k} = ?`,...numChoices(c,8),explanation:`${t}×${k}=${c}. ${t===4?'Gấp đôi 2×k':t===8?'Gấp đôi 4×k':'Gấp đôi k'}.`})}return o}},
+    {id:'v2-3.3',e:'🔟',t:'Bảng nhân 1, 5, 10',d:'Cơ bản theo SGK',
+     ex:[{p:'5 × 8 = ?',steps:['Bảng 5: 5,10,15,20,25,30,35,40.','5×8 = 40.','Mẹo: 5×n = nửa của 10×n.'],a:'40'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const t=[1,5,10][rand(0,2)],k=rand(2,10),c=t*k;o.push({prompt:`${t} × ${k} = ?`,...numChoices(c,5),explanation:`${t}×${k}=${c}. ${t===10?'Nhân 10 thêm số 0':t===5?'Nửa của 10×k':'Bằng k'}.`})}return o}},
+    {id:'g2-clk',e:'🕐',t:'Đồng hồ giờ đúng',d:'Đọc giờ trên đồng hồ kim',
+     ex:[{p:'Đồng hồ chỉ mấy giờ?',kind:'clock',time:'3:30',steps:['Kim giờ ở giữa 3 và 4 → giờ 3.','Kim phút chỉ số 6 → 30 phút.','3 giờ 30 phút.'],a:'3 giờ 30 phút'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const h=rand(1,12),m=[0,15,30,45][rand(0,3)];const c=`${h} giờ ${m===0?'đúng':m+' phút'}`;const ds=new Set();while(ds.size<3){const dh=rand(1,12),dm=[0,15,30,45][rand(0,3)],s=`${dh} giờ ${dm===0?'đúng':dm+' phút'}`;if(s!==c)ds.add(s)}const ch=shuffle([c,...ds]);o.push({prompt:'Đồng hồ chỉ mấy giờ?',kind:'clock',time:`${h}:${String(m).padStart(2,'0')}`,choices:ch,answerIndex:ch.indexOf(c),explanation:`Kim ngắn chỉ ${h}, kim dài chỉ ${m===0?'12':'số '+(m/5)} → ${c}.`})}return o}},
+    // === HỌC PHẦN 2 — Bài 4.1 → 8.1 (Nâng cao) ===
+    {id:'v2-4.1',e:'🎲',t:'Hình khối 3D',d:'Lập phương, cầu, trụ, chóp',adv:true,
+     ex:[{p:'Quả bóng đá là hình gì?',steps:['Tròn ở mọi hướng → hình cầu.'],a:'Hình cầu'}],
+     gen:()=>{const S=[['Lập phương Rubik','Hình lập phương'],['Hộp sữa','Hình hộp chữ nhật'],['Hộp bánh Oreo','Hình hộp chữ nhật'],['Quả bóng đá','Hình cầu'],['Lon nước','Hình trụ'],['Kim tự tháp','Hình chóp']];const o=[];const p=shuffle(S);for(let i=0;i<5;i++){const it=p[i%p.length];const ds=S.filter(s=>s[1]!==it[1]).map(s=>s[1]);const ch=shuffle([it[1],...shuffle([...new Set(ds)]).slice(0,3)]);o.push({prompt:`${it[0]} là hình gì?`,choices:ch,answerIndex:ch.indexOf(it[1]),explanation:`${it[0]} → ${it[1]}.`})}return o}},
+    {id:'v2-5.1',e:'🍰',t:'Phân số nhận biết',d:'Đếm phần — 1/2, 1/3, 1/4',adv:true,
+     ex:[{p:'Hình tròn chia 4 phần, tô 1 phần. Phân số?',kind:'fraction',f1:{n:1,d:4},steps:['Mẫu = 4 (tổng phần).','Tử = 1 (phần tô).','Đáp án: 1/4.'],a:'1/4'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const d=[2,3,4,5,6,8,10][rand(0,6)],n=rand(1,d-1);const c=`${n}/${d}`;const ds=new Set([c]);while(ds.size<4){const dd=[2,3,4,5,6,8,10][rand(0,6)],dn=rand(1,dd-1);const v=`${dn}/${dd}`;if(v!==c)ds.add(v)}const ch=shuffle([...ds]);o.push({prompt:`Hình chia ${d} phần bằng nhau, tô ${n} phần. Phân số là?`,kind:'fraction',f1:{n,d},choices:ch,answerIndex:ch.indexOf(c),explanation:`Tử/mẫu = ${n}/${d}.`})}return o}},
+    {id:'v2-6.1',e:'📏',t:'Đo độ dài',d:'mm, cm, m, km',adv:true,
+     ex:[{p:'3 m = ? cm',steps:['1 m = 100 cm.','3 m = 300 cm.'],a:'300 cm'}],
+     gen:()=>{const o=[];const T=[['cm','mm',10],['m','cm',100],['km','m',1000]];for(let i=0;i<5;i++){const t=T[rand(0,2)],n=rand(2,9),c=n*t[2];o.push({prompt:`${n} ${t[0]} = ? ${t[1]}`,...numChoices(c,30),explanation:`1 ${t[0]} = ${t[2]} ${t[1]}. ${n} ${t[0]} = ${c} ${t[1]}.`})}return o}},
+    {id:'v2-6.2',e:'🔲',t:'Chu vi đa giác',d:'HV, HCN, đa giác đều',adv:true,
+     ex:[{p:'HV cạnh 5 cm. Chu vi?',steps:['HV có 4 cạnh bằng nhau.','5×4 = 20 cm.'],a:'20 cm'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const m=rand(0,2);if(m===0){const s=rand(3,15),c=s*4;o.push({prompt:`HV cạnh ${s} cm. Chu vi?`,...numChoices(c,8),explanation:`${s}×4 = ${c} cm.`})}else if(m===1){const a=rand(3,15),b=rand(3,15),c=2*(a+b);o.push({prompt:`HCN ${a}×${b} cm. Chu vi?`,...numChoices(c,10),explanation:`(${a}+${b})×2 = ${c} cm.`})}else{const sides=[3,5,6,8][rand(0,3)],s=rand(3,10),c=s*sides;const name={3:'tam',5:'ngũ',6:'lục',8:'bát'}[sides];o.push({prompt:`${name} giác đều, mỗi cạnh ${s}cm. Chu vi?`,...numChoices(c,10),explanation:`${s}×${sides}=${c} cm.`})}}return o}},
+    {id:'v2-6.3',e:'🟦',t:'Diện tích đếm ô',d:'Tổng số ô vuông',adv:true,
+     ex:[{p:'HCN 3 hàng × 4 cột. Diện tích?',steps:['Đếm: 3×4 = 12 ô.'],a:'12 đơn vị ô'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const a=rand(2,8),b=rand(2,8),c=a*b;o.push({prompt:`HCN ${a} hàng × ${b} cột. Diện tích?`,...numChoices(c,5),explanation:`${a}×${b}=${c} ô vuông.`})}return o}},
+    {id:'v2-6.4',e:'🌡️',t:'Nhiệt độ',d:'Đọc °C, chênh lệch',adv:true,
+     ex:[{p:'A: 32°C, B: 18°C. Chênh lệch?',steps:['32 − 18 = 14.','Chênh: 14°C.'],a:'14°C'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const a=rand(20,40),b=rand(5,a-2),c=a-b;const ds=new Set([c]);while(ds.size<4){const v=rand(1,40);if(v!==c)ds.add(v)}const ch=shuffle([...ds]).map(x=>x+'°C');o.push({prompt:`A: ${a}°C, B: ${b}°C. Chênh lệch bao nhiêu?`,choices:ch,answerIndex:ch.indexOf(c+'°C'),explanation:`${a}−${b}=${c}°C.`})}return o}},
+    {id:'v2-8.1',e:'⏰',t:'Đồng hồ giờ kém',d:'Phút lẻ + cách gọi khác',adv:true,
+     ex:[{p:'9 giờ 50 phút còn gọi là?',kind:'clock',time:'9:50',steps:['Còn 10 phút nữa đến 10:00.','Cách gọi: 10 giờ kém 10 phút.'],a:'10 giờ kém 10 phút'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const h=rand(1,11),m=[35,40,45,50,55][rand(0,4)];const km=60-m;const c=`${h+1} giờ kém ${km} phút`;const ds=new Set([c]);while(ds.size<4){const dh=rand(1,12),dkm=[5,10,15,20,25][rand(0,4)];const v=`${dh} giờ kém ${dkm} phút`;if(v!==c)ds.add(v)}const ch=shuffle([...ds]);o.push({prompt:`${h} giờ ${m} phút còn gọi là?`,kind:'clock',time:`${h}:${m}`,choices:ch,answerIndex:ch.indexOf(c),explanation:`${h}:${m} thiếu ${km} phút nữa là ${h+1}:00.`})}return o}},
+    // === HỌC PHẦN 3-4 — Bài 9.1 → 12.3 (Nâng cao) ===
+    {id:'v2-9.1',e:'📊',t:'Vạch kiểm đếm',d:'Tally chart đọc số',adv:true,
+     ex:[{p:'||||̸ | đại diện số nào?',steps:['||||̸ = 5','+ | = 6.'],a:'6'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const n=rand(3,18);const g=Math.floor(n/5),r=n%5;const tally=('||||̸ '.repeat(g)+'|'.repeat(r)).trim()||'|';o.push({prompt:`Vạch kiểm đếm "${tally}" = ?`,...numChoices(n,3),explanation:`${g} nhóm 5 + ${r} vạch = ${n}.`})}return o}},
+    {id:'v2-10.1',e:'🔢',t:'Cặp số tổng 100/1000',d:'Phần bù + tính nhanh',adv:true,
+     ex:[{p:'73 + ? = 100',steps:['Phần bù 100 của 73 là 27.','73+27=100.'],a:'27'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const m=rand(0,1);if(m===0){const a=rand(1,99),c=100-a;o.push({prompt:`${a} + ? = 100`,...numChoices(c,5),explanation:`Phần bù 100 của ${a} là ${c}.`})}else{const a=rand(100,900),c=1000-a;o.push({prompt:`${a} + ? = 1000`,...numChoices(c,30),explanation:`Phần bù 1000 của ${a} là ${c}.`})}}return o}},
+    {id:'v2-11.1',e:'🎯',t:'Phân phối + chia có dư',d:'8×7 = 5×7+3×7',adv:true,
+     ex:[{p:'26 ÷ 3 = ? dư ?',steps:['3×8 = 24 ≤ 26.','26−24 = 2.','26÷3 = 8 dư 2.'],a:'8 dư 2'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const m=rand(0,1);if(m===0){const b=[3,4,5,6][rand(0,3)],q=rand(3,15),r=rand(1,b-1);const a=b*q+r;const c=`${q} dư ${r}`;const ds=new Set([c]);while(ds.size<4){const dq=rand(1,15),dr=rand(0,b-1);const v=dr===0?String(dq):`${dq} dư ${dr}`;if(v!==c)ds.add(v)}const ch=shuffle([...ds]);o.push({prompt:`${a} ÷ ${b} = ?`,choices:ch,answerIndex:ch.indexOf(c),explanation:`${b}×${q}=${b*q}, ${a}−${b*q}=${r}.`})}else{const a=rand(6,9),b=rand(6,9),c=a*b;const half=Math.floor(a/2);o.push({prompt:`${a} × ${b} = ? (dùng phân phối)`,...numChoices(c,8),explanation:`(${half}+${a-half})×${b}=${half*b}+${(a-half)*b}=${c}.`})}}return o}},
+    {id:'v2-12.1',e:'🍕',t:'Phân số nâng cao',d:'Tương đương + cộng/trừ cùng mẫu',adv:true,
+     ex:[{p:'1/5 + 4/5 = ?',kind:'fraction',f1:{n:1,d:5},f2:{n:4,d:5},op:'+',steps:['Cùng mẫu 5: cộng tử 1+4=5.','5/5 = 1.'],a:'1'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const m=rand(0,2);if(m===0){const d=[3,4,5,6,8,10][rand(0,5)],a=rand(1,d-2),b=rand(1,d-a);const cN=a+b;const c=cN===d?'1':`${cN}/${d}`;const ds=new Set([c]);while(ds.size<4){const x=rand(1,d);const k=x===d?'1':`${x}/${d}`;if(k!==c)ds.add(k)}const ch=shuffle([...ds]);o.push({prompt:`${a}/${d} + ${b}/${d} = ?`,choices:ch,answerIndex:ch.indexOf(c),explanation:`Cùng mẫu: tử ${a}+${b}=${cN}. Kết quả: ${c}.`})}else if(m===1){const d=[3,4,5,6,8,10][rand(0,5)],a=rand(2,d-1),b=rand(1,a-1);const cN=a-b;const c=cN===0?'0':`${cN}/${d}`;const ds=new Set([c]);while(ds.size<4){const x=rand(0,d);const k=x===0?'0':`${x}/${d}`;if(k!==c)ds.add(k)}const ch=shuffle([...ds]);o.push({prompt:`${a}/${d} − ${b}/${d} = ?`,choices:ch,answerIndex:ch.indexOf(c),explanation:`Cùng mẫu: tử ${a}−${b}=${cN}.`})}else{const pairs=[['1/2','2/4'],['1/2','5/10'],['1/3','2/6'],['1/4','2/8'],['1/5','2/10']];const p=pairs[rand(0,pairs.length-1)];const ds=new Set([p[1]]);while(ds.size<4){const dd=[2,3,4,5,6,8,10][rand(0,6)],dn=rand(1,dd-1);const v=`${dn}/${dd}`;if(v!==p[1])ds.add(v)}const ch=shuffle([...ds]);o.push({prompt:`Phân số tương đương với ${p[0]} là?`,choices:ch,answerIndex:ch.indexOf(p[1]),explanation:`${p[0]} = ${p[1]}.`})}}return o}},
+    // === LỚP 3 PREVIEW ===
+    {id:'v2-x1',e:'🚀',t:'Số đến 10 000',d:'Lớp 3 — chuẩn bị',examFlag:true,
+     ex:[{p:'"3 nghìn 5 trăm 78" viết là?',steps:['3000 + 500 + 78 = 3578.'],a:'3578'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const th=rand(1,9),h=rand(0,9),t=rand(0,9),u=rand(0,9);const n=th*1000+h*100+t*10+u;const ds=new Set([n]);while(ds.size<4){const v=rand(1000,9999);if(v!==n)ds.add(v)}const ch=shuffle([...ds]).map(String);const w=`${th} nghìn${h>0?' '+h+' trăm':''}${t>0?' '+t+' chục':''}${u>0?' '+u:''}`;o.push({prompt:`"${w}" viết là?`,choices:ch,answerIndex:ch.indexOf(String(n)),explanation:`${w} = ${n}.`})}return o}},
+    {id:'v2-x2',e:'✖️',t:'Nhân 2 chữ số × 1',d:'Lớp 3 — chuẩn bị',examFlag:true,
+     ex:[{p:'34 × 5 = ?',steps:['Tách: 30+4.','30×5=150, 4×5=20.','150+20 = 170.'],a:'170'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const a=rand(11,49),b=rand(2,9),c=a*b;o.push({prompt:`${a} × ${b} = ?`,...numChoices(c,30),explanation:`(${Math.floor(a/10)*10}+${a%10})×${b}=${Math.floor(a/10)*10*b}+${(a%10)*b}=${c}.`})}return o}}
   ],
   english:[
     {id:'g2-vc',e:'🐶',t:'Từ vựng con vật',d:'Cambridge Starters',lang:'en-US',
@@ -1330,6 +1373,35 @@ render();
 </body>
 </html>
 uyệt! 🎉</button></div>`;
+  ov.onclick=e=>{if(e.target===ov||e.target.id==='cls'){state.newAch=[];ov.remove()}};
+  document.body.appendChild(ov);
+}
+
+if('speechSynthesis' in window){window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices()}
+
+render();
+})();
+</script>
+</body>
+</html>
+ng} (−${r.wrong})${r.floored?' · Sàn 0':''}<br>Ví: ${r.newBal} 🪙 · 🔥 ${r.streak}</span></div>`;
+  root.innerHTML=`<div class="result">
+    <span class="e">${e}</span>
+    <h3 style="color:#6B46C1;font-weight:600;margin:0">${r.title}</h3>
+    <p class="s">${r.correct} / ${r.total}</p>
+    <p class="m">${m}</p>
+    ${coinBox}
+    <br><button class="btn-go" id="cont">Tiếp tục 🚀</button>
+  </div>`;
+  root.querySelector('#cont').onclick=()=>{state.topic=null;state.screen='topics';render()};
+  if(state.newAch&&state.newAch.length)setTimeout(showAchModal,500);
+}
+
+function showAchModal(){
+  const newly=state.newAch;
+  const list=newly.map(a=>`<div class="ach-item"><span class="ae">${a.e}</span><div><p class="at">${a.t}</p><p class="ad">${a.d}</p></div></div>`).join('');
+  const ov=document.createElement('div');ov.className='modal-bg';
+  ov.innerHTML=`<div class="ach-modal"><h2>🎊 Mở khoá huy hiệu mới!</h2>${list}<button class="closebtn" id="cls">Tuyệt! 🎉</button></div>`;
   ov.onclick=e=>{if(e.target===ov||e.target.id==='cls'){state.newAch=[];ov.remove()}};
   document.body.appendChild(ov);
 }
