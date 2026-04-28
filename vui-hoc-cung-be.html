@@ -620,6 +620,31 @@ function clockSVG(time,size){
   </svg>`;
 }
 
+// ==== Cửa hàng quà thưởng ====
+const REWARDS=[
+  {id:'icecream',e:'🍦',name:'Một cây kem',cost:50,desc:'Que kem yêu thích của bé'},
+  {id:'toy100',e:'🧸',name:'Đồ chơi nhỏ',cost:200,desc:'Bộ đồ chơi dưới 100.000 đ'},
+  {id:'toy300',e:'🎮',name:'Đồ chơi lớn',cost:500,desc:'Bộ đồ chơi dưới 300.000 đ'},
+  {id:'patin',e:'🛼',name:'Vé trượt patin',cost:1000,desc:'1 buổi chơi patin với bố/mẹ'},
+  {id:'gift2m',e:'🎁',name:'Quà yêu thích 2tr',cost:2000,desc:'Phần quà tự chọn trị giá ~2 triệu'},
+  {id:'big5k',e:'⭐',name:'Quà lớn',cost:5000,desc:'Đôi giày trượt patin XỊN hoặc bộ đồ chơi PS5'}
+];
+
+// Lưu lịch sử đổi quà per-profile
+function getRedeemed(p){return LS.get('redeemed_'+p,[])}
+function addRedemption(p,rewardId){
+  const list=getRedeemed(p);
+  const r=REWARDS.find(x=>x.id===rewardId);
+  list.push({id:'re-'+Date.now(),rewardId,name:r.name,emoji:r.e,cost:r.cost,date:new Date().toISOString().slice(0,10),delivered:false});
+  LS.set('redeemed_'+p,list);
+  setCoins(p,getCoins(p)-r.cost);
+}
+function markDelivered(p,redemptionId){
+  const list=getRedeemed(p);
+  const i=list.findIndex(r=>r.id===redemptionId);
+  if(i>=0){list[i].delivered=true;LS.set('redeemed_'+p,list)}
+}
+
 // ==== Phân loại cấp độ topic ====
 // basic = không có flag, advanced = có adv (không examFlag), exam = có examFlag
 function topicLevel(t){
@@ -642,10 +667,67 @@ function countLevel(profile,level){
 const state={screen:'select',profile:null,level:'basic',subj:null,topic:null,exIndex:0,stepShown:0,questions:[],qIndex:0,score:0,picked:null,lastResult:null,newAch:[]};
 
 const render=()=>{
-  const r={select:renderSelect,level:renderLevel,dashboard:renderDashboard,topics:renderTopics,lesson:renderLesson,quiz:renderQuiz,result:renderResult};
+  const r={select:renderSelect,level:renderLevel,dashboard:renderDashboard,topics:renderTopics,lesson:renderLesson,quiz:renderQuiz,result:renderResult,rewards:renderRewards};
   (r[state.screen]||renderSelect)();
   if(state.newAch.length>0)showAchModal();
 };
+
+function renderRewards(){
+  const p=state.profile,info=PROFILES[p],t=THEMES[info.theme];
+  applyBodyTheme(t.id);
+  const coins=getCoins(p);
+  const redeemed=getRedeemed(p);
+  const pending=redeemed.filter(r=>!r.delivered).reverse();
+  const avatar=p==='vy'?princessChar('#92400E','#EC4899',38):blockyChar('#FBBF24','#3B82F6','#1E40AF',32);
+  // Danh sách phần thưởng — tô màu theo mức độ "đắt"
+  const tier=(c)=>c<=200?'#10B981':c<=500?'#3B82F6':c<=1000?'#A78BFA':c<=2000?'#FB923C':'#EF4444';
+  const list=REWARDS.map(r=>{
+    const canAfford=coins>=r.cost;
+    const need=r.cost-coins;
+    const pct=Math.min(100,Math.round(coins/r.cost*100));
+    return `<div style="background:white;border-radius:14px;padding:14px;margin-bottom:8px;box-shadow:0 4px 12px rgba(0,0,0,.06);display:flex;gap:12px;align-items:center;border-left:5px solid ${tier(r.cost)}">
+      <span style="font-size:42px;flex-shrink:0">${r.e}</span>
+      <div style="flex:1;min-width:0">
+        <p style="margin:0;font-size:14px;font-weight:600;color:#1F2937">${r.name}</p>
+        <p style="margin:2px 0 6px;font-size:11px;color:#6B7280;line-height:1.4">${r.desc}</p>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="background:${tier(r.cost)};color:white;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:600">${r.cost} 🪙</span>
+          ${canAfford
+            ? `<button class="redeem-btn" data-id="${r.id}" style="background:linear-gradient(90deg,#10B981,#059669);color:white;border:none;border-radius:99px;padding:6px 14px;font-weight:600;cursor:pointer;font-family:inherit;font-size:11px">✨ Đổi ngay</button>`
+            : `<span style="font-size:11px;color:#9CA3AF">Còn thiếu <strong style="color:#EF4444">${need} 🪙</strong></span>`}
+        </div>
+        ${!canAfford?`<div style="height:5px;background:#F3F4F6;border-radius:99px;overflow:hidden;margin-top:6px"><div style="height:100%;background:${tier(r.cost)};width:${pct}%;transition:width .4s"></div></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  const pendingHtml=pending.length>0?`<div style="background:#FEF3C7;border-left:4px solid #F59E0B;border-radius:10px;padding:10px;margin-bottom:10px">
+    <p style="margin:0 0 6px;font-size:11px;font-weight:600;color:#92400E">⏳ Quà đang chờ bố/mẹ trao (${pending.length})</p>
+    ${pending.map(r=>`<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#374151;margin:4px 0"><span>${r.emoji}</span><span style="flex:1">${r.name}</span><span style="color:#92400E;font-weight:600">−${r.cost} 🪙</span></div>`).join('')}
+  </div>`:'';
+  root.innerHTML=`<div class="bar">
+    <div class="btn gray" id="back">← Quay</div>
+    <div class="namebar" style="display:flex;align-items:center;gap:8px;justify-content:center"><div class="bouncer">${avatar}</div><div><p class="nm">${info.name}</p><p class="gr">Cửa hàng quà</p></div></div>
+    <span></span>
+  </div>
+  <div style="background:linear-gradient(135deg,#FFD93D,#FBBF24,#FF6FB5);border-radius:18px;padding:16px;text-align:center;color:white;box-shadow:0 8px 22px rgba(0,0,0,.15);margin-bottom:12px">
+    <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:.6px;opacity:.95">🪙 Ví xu của bé</p>
+    <p style="margin:4px 0 0;font-size:42px;font-weight:600;text-shadow:0 2px 6px rgba(0,0,0,.2)">${coins}</p>
+  </div>
+  ${pendingHtml}
+  <p style="font-size:11px;color:#6B7280;text-align:center;margin:8px 0 10px">Học chăm — kiếm xu — đổi quà 🎁</p>
+  ${list}
+  <p style="font-size:10px;color:#9CA3AF;text-align:center;margin:14px 0 0;line-height:1.5">💡 Sau khi bé bấm "Đổi", bố/mẹ sẽ trao quà thật trong tuần. Quà chờ trao sẽ hiện ở khung vàng phía trên.</p>` + bgSceneHTML(t.id);
+  root.querySelector('#back').onclick=()=>{state.screen='dashboard';render()};
+  root.querySelectorAll('.redeem-btn').forEach(b=>b.onclick=()=>{
+    const r=REWARDS.find(x=>x.id===b.dataset.id);
+    if(getCoins(p)<r.cost)return;
+    if(confirm(`Đổi "${r.name}" với ${r.cost} 🪙?\n\nVí xu hiện tại: ${getCoins(p)} 🪙\nSau khi đổi: ${getCoins(p)-r.cost} 🪙\n\nBố/mẹ sẽ trao quà thật trong tuần.`)){
+      addRedemption(p,r.id);
+      alert(`🎉 Đã đặt quà "${r.name}"!\n\nĐợi bố/mẹ trao quà nhé. Quà chờ trao hiện ở khung vàng phía trên.`);
+      render();
+    }
+  });
+}
 
 function renderSelect(){
   applyBodyTheme(null); // reset background mặc định cho màn chọn
@@ -711,6 +793,16 @@ function renderDashboard(){
     <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#374151">Cấp độ:<span style="background:${lvlInfo.color};color:white;padding:5px 12px;border-radius:99px;font-weight:600;font-size:12px">${lvlInfo.e} ${lvlInfo.name}</span></span>
     <button class="btn" id="changeLevel" style="padding:6px 12px;font-size:11px;background:#A678FF;color:white;border:none;border-radius:99px;font-weight:500;cursor:pointer">🔄 Đổi cấp độ</button>
   </div>
+  <button id="openRewards" style="display:flex;align-items:center;justify-content:space-between;width:100%;background:linear-gradient(90deg,#FFD93D,#FBBF24,#FF6FB5);color:white;border:none;border-radius:18px;padding:14px 18px;cursor:pointer;font-family:inherit;box-shadow:0 6px 18px rgba(255,111,181,.35);margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:36px">🎁</span>
+      <div style="text-align:left">
+        <p style="margin:0;font-size:16px;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,.2)">Cửa hàng quà</p>
+        <p style="margin:2px 0 0;font-size:11px;opacity:.95">${coins} 🪙 → đổi quà thật từ bố/mẹ</p>
+      </div>
+    </div>
+    <span style="background:rgba(255,255,255,.3);padding:6px 12px;border-radius:99px;font-size:12px;font-weight:600">${REWARDS.filter(r=>coins>=r.cost).length}/${REWARDS.length} quà 🔓</span>
+  </button>
   <p class="sub">Chọn môn học</p>
   <div class="subjs">
     <div class="scard" data-s="math" style="background:linear-gradient(135deg,#4DC3FF,#6BE38E)"><span class="e">🧮</span><h3 class="ct">Toán</h3><p class="cd">Phép tính & hình</p></div>
@@ -719,6 +811,7 @@ function renderDashboard(){
   </div>` + bgSceneHTML(t.id);
   root.querySelector('#back').onclick=()=>{state.profile=null;state.screen='select';render()};
   root.querySelector('#changeLevel').onclick=()=>{state.screen='level';render()};
+  root.querySelector('#openRewards').onclick=()=>{state.screen='rewards';render()};
   root.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{state.subj=b.dataset.s;state.screen='topics';render()});
 }
 
