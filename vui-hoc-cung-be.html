@@ -217,17 +217,35 @@ const TOPICS_VY={
      gen:()=>{const o=[];for(let i=0;i<5;i++){const add=Math.random()<.5;const a=rand(10,40);const b=add?rand(5,Math.min(40,90-a)):rand(2,a-2);const c=add?a+b:a-b;o.push({prompt:'Đếm và tính:',kind:'addsub',n1:a,op:add?'+':'−',n2:b,...numChoices(c),explanation:`${a} ${add?'+':'−'} ${b} = ${c}. Đếm thanh chục và ô đơn vị bên hình.`})}return o}},
     {id:'g2-clk',e:'🕐',t:'Xem đồng hồ',d:'Nhìn hình, đọc giờ',
      ex:[{p:'Đồng hồ chỉ mấy giờ?',kind:'clock',time:'3:30',steps:['Kim ngắn (kim giờ) ở giữa 3 và 4 → giờ là 3.','Kim dài (kim phút) chỉ vào số 6 → 6 × 5 = 30 phút.','Đồng hồ chỉ 3 giờ 30 phút.'],a:'3 giờ 30 phút'}],
-     gen:()=>{const o=[];for(let i=0;i<5;i++){const h=rand(1,12),m=[0,15,30,45][rand(0,3)];const c=`${h} giờ ${m===0?'đúng':m+' phút'}`;const ds=new Set();while(ds.size<3){const dh=rand(1,12),dm=[0,15,30,45][rand(0,3)],s=`${dh} giờ ${dm===0?'đúng':dm+' phút'}`;if(s!==c)ds.add(s)}const ch=shuffle([c,...ds]);o.push({prompt:'Đồng hồ chỉ mấy giờ?',kind:'clock',time:`${h}:${String(m).padStart(2,'0')}`,choices:ch,answerIndex:ch.indexOf(c),explanation:`Kim ngắn chỉ ${h}, kim dài chỉ ${m===0?'12 (đúng giờ)':'số '+(m/5)+' = '+m+' phút'} → ${c}.`})}return o}}
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const h=rand(1,12),m=[0,15,30,45][rand(0,3)];const c=`${h} giờ ${m===0?'đúng':m+' phút'}`;const ds=new Set();while(ds.size<3){const dh=rand(1,12),dm=[0,15,30,45][rand(0,3)],s=`${dh} giờ ${dm===0?'đúng':dm+' phút'}`;if(s!==c)ds.add(s)}const ch=shuffle([c,...ds]);o.push({prompt:'Đồng hồ chỉ mấy giờ?',kind:'clock',time:`${h}:${String(m).padStart(2,'0')}`,choices:ch,answerIndex:ch.indexOf(c),explanation:`Kim ngắn chỉ ${h}, kim dài chỉ ${m===0?'12 (đúng giờ)':'số '+(m/5)+' = '+m+' phút'} → ${c}.`})}return o}},
+    {id:'g2-tt',e:'✖️',t:'Cửu chương 2, 5, 10',d:'Nhân nhanh',
+     ex:[{p:'5 × 7 = ?',steps:['Bảng cửu chương 5: đếm 5, 10, 15, 20, 25, 30, 35.','Lần thứ 7 là 35.','Vậy 5 × 7 = 35.'],a:'35'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const t=[2,5,10][rand(0,2)],k=rand(2,10),c=t*k;o.push({prompt:`${t} × ${k} = ?`,...numChoices(c,8),explanation:`${t} × ${k} = ${c}. Mẹo: ${t===10?'nhân 10 thì thêm số 0':t===5?'nhân 5 = nhân 10 ÷ 2':'nhân 2 = cộng đôi'}.`})}return o}},
+    {id:'g2-len',e:'📏',t:'Đo độ dài',d:'cm và m',
+     ex:[{p:'3 m 25 cm = ? cm',steps:['Quy tắc: 1 m = 100 cm.','3 m = 3 × 100 = 300 cm.','300 + 25 = 325 cm.'],a:'325 cm'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const m=rand(1,5),cm=rand(0,99),c=m*100+cm;o.push({prompt:`${m} m ${cm} cm = ? cm`,...numChoices(c,30),explanation:`${m} m = ${m*100} cm. Tổng: ${m*100} + ${cm} = ${c} cm.`})}return o}},
+    {id:'g2-word',e:'📝',t:'Bài toán nhiều bước',d:'Singapore-style 2 bước',adv:true,
+     ex:[{p:'Lan có 25 viên kẹo. Mẹ cho thêm 18 viên. Lan cho em 12 viên. Còn lại?',steps:['Bước 1 (cộng): 25 + 18 = 43.','Bước 2 (trừ): 43 − 12 = 31.','Đáp số: 31 viên.'],a:'31 viên'}],
+     gen:()=>{const items=['viên kẹo','quyển vở','cây bút','quả táo'];const names=['Lan','Minh','An','Mai'];const o=[];for(let i=0;i<5;i++){const item=items[rand(0,items.length-1)];const name=names[rand(0,names.length-1)];const start=rand(15,50),add=rand(8,30),give=rand(5,Math.min(20,start+add-3));const c=start+add-give;o.push({prompt:`${name} có ${start} ${item}. Bố cho thêm ${add}. ${name} cho bạn ${give}. Còn lại bao nhiêu?`,...numChoices(c,8),explanation:`Bước 1: ${start}+${add}=${start+add}. Bước 2: ${start+add}−${give}=${c} ${item}.`})}return o}}
   ],
   english:[
-    {id:'g2-vc',e:'🐶',t:'Từ vựng',d:'Con vật',lang:'en-US',
+    {id:'g2-vc',e:'🐶',t:'Từ vựng con vật',d:'Cambridge Starters',lang:'en-US',
      ex:[{p:'Đây là gì? 🐶',emoji:'🐶',steps:['Hình con chó.','Tiếng Anh: "Dog".'],a:'Dog'}],
-     gen:()=>{const V=[['Dog','🐶','con chó'],['Cat','🐱','con mèo'],['Cow','🐮','con bò'],['Fish','🐟','con cá'],['Bird','🐦','con chim']];const p=shuffle(V);const o=[];for(let i=0;i<5;i++){const it=p[i%p.length];const d=shuffle(V.filter(v=>v[0]!==it[0])).slice(0,3);const all=shuffle([it,...d]);o.push({prompt:'Đây là gì?',emoji:it[1],choices:all.map(v=>v[0]),answerIndex:all.findIndex(v=>v[0]===it[0]),explanation:`${it[1]} là "${it[2]}", tiếng Anh là "${it[0]}".`,speakLang:'en-US'})}return o}}
+     gen:()=>{const V=[['Dog','🐶','con chó'],['Cat','🐱','con mèo'],['Cow','🐮','con bò'],['Fish','🐟','con cá'],['Bird','🐦','con chim']];const p=shuffle(V);const o=[];for(let i=0;i<5;i++){const it=p[i%p.length];const d=shuffle(V.filter(v=>v[0]!==it[0])).slice(0,3);const all=shuffle([it,...d]);o.push({prompt:'Đây là gì?',emoji:it[1],choices:all.map(v=>v[0]),answerIndex:all.findIndex(v=>v[0]===it[0]),explanation:`${it[1]} là "${it[2]}", tiếng Anh là "${it[0]}".`,speakLang:'en-US'})}return o}},
+    {id:'g2-fb',e:'👨‍👩‍👧‍👦',t:'Family & Body',d:'Gia đình & cơ thể',lang:'en-US',
+     ex:[{p:'Đây là gì? 👁️',emoji:'👁️',steps:['Hình con mắt.','Tiếng Anh: "Eye". Đọc: /aɪ/.'],a:'Eye'}],
+     gen:()=>{const V=[['Mother','👩','mẹ'],['Father','👨','bố'],['Sister','👧','chị/em gái'],['Brother','👦','anh/em trai'],['Hand','✋','bàn tay'],['Foot','🦶','bàn chân'],['Eye','👁️','mắt'],['Nose','👃','mũi'],['Mouth','👄','miệng']];const p=shuffle(V);const o=[];for(let i=0;i<5;i++){const it=p[i%p.length];const d=shuffle(V.filter(v=>v[0]!==it[0])).slice(0,3);const all=shuffle([it,...d]);o.push({prompt:'Đây là gì?',emoji:it[1],choices:all.map(v=>v[0]),answerIndex:all.findIndex(v=>v[0]===it[0]),explanation:`${it[1]} là "${it[2]}", tiếng Anh "${it[0]}".`,speakLang:'en-US'})}return o}},
+    {id:'g2-num',e:'🔢',t:'Số đếm 1-20',d:'one, two, three...',lang:'en-US',
+     ex:[{p:'13 → tiếng Anh là gì?',steps:['Số 11-19 thường có đuôi "-teen".','"Three" + "teen" = "thirteen".','Lưu ý: đọc THIR- không phải three-.'],a:'thirteen'}],
+     gen:()=>{const N={1:'one',2:'two',3:'three',5:'five',7:'seven',10:'ten',13:'thirteen',15:'fifteen',18:'eighteen',20:'twenty'};const ks=Object.keys(N).map(Number);const o=[];for(let i=0;i<5;i++){const n=ks[rand(0,ks.length-1)];const ch=shuffle([N[n],...shuffle(ks.filter(x=>x!==n)).slice(0,3).map(x=>N[x])]);o.push({prompt:`${n} → tiếng Anh?`,choices:ch,answerIndex:ch.indexOf(N[n]),explanation:`${n} = "${N[n]}".`,speak:N[n],speakLang:'en-US'})}return o}}
   ],
   vietnamese:[
-    {id:'vn-sp',e:'✏️',t:'Chính tả',d:'l/n, ch/tr',adv:true,
+    {id:'vn-sp',e:'✏️',t:'Chính tả l/n, ch/tr',d:'Phụ âm đầu',adv:true,
      ex:[{p:'Em ___ bài tập về nhà. (làm/nàm)',steps:['"Làm" = thực hiện hành động.','Viết bằng "L".'],a:'làm'}],
-     gen:()=>{const W=[{c:'làm',w:'nàm',ctx:'Em ___ bài tập về nhà.'},{c:'lúa',w:'núa',ctx:'Cánh đồng ___ chín vàng.'},{c:'trẻ',w:'chẻ',ctx:'Các em ___ rất ngoan.'},{c:'sạch',w:'xạch',ctx:'Bé giữ tay luôn ___.'},{c:'nóng',w:'lóng',ctx:'Mùa hè trời rất ___.'}];const o=[];const p=shuffle(W);for(let i=0;i<5;i++){const it=p[i%p.length];const ds=W.filter(x=>x.c!==it.c).map(x=>x.w);const ch=shuffle([it.c,it.w,...ds.slice(0,2)]);o.push({prompt:`Điền từ đúng: "${it.ctx}"`,choices:ch,answerIndex:ch.indexOf(it.c),explanation:`"${it.c}" là từ chuẩn. "${it.w}" không phải từ chuẩn tiếng Việt.`})}return o}}
+     gen:()=>{const W=[{c:'làm',w:'nàm',ctx:'Em ___ bài tập về nhà.'},{c:'lúa',w:'núa',ctx:'Cánh đồng ___ chín vàng.'},{c:'trẻ',w:'chẻ',ctx:'Các em ___ rất ngoan.'},{c:'sạch',w:'xạch',ctx:'Bé giữ tay luôn ___.'},{c:'nóng',w:'lóng',ctx:'Mùa hè trời rất ___.'}];const o=[];const p=shuffle(W);for(let i=0;i<5;i++){const it=p[i%p.length];const ds=W.filter(x=>x.c!==it.c).map(x=>x.w);const ch=shuffle([it.c,it.w,...ds.slice(0,2)]);o.push({prompt:`Điền từ đúng: "${it.ctx}"`,choices:ch,answerIndex:ch.indexOf(it.c),explanation:`"${it.c}" là từ chuẩn. "${it.w}" không phải từ chuẩn tiếng Việt.`})}return o}},
+    {id:'vn-tone',e:'🔤',t:'Dấu hỏi / dấu ngã',d:'Phân biệt thanh',adv:true,
+     ex:[{p:'Bé uống một ly ___ nóng. (sữa / sửa)',steps:['"Sữa" (đồ uống) — dấu NGÃ.','"Sửa" (sửa chữa) — dấu HỎI.','Câu nói về đồ uống → "sữa".'],a:'sữa'}],
+     gen:()=>{const W=[{c:'sữa',w:'sửa',ctx:'Bé uống một ly ___ nóng.'},{c:'sửa',w:'sữa',ctx:'Bố ___ xe đạp cho con.'},{c:'cũng',w:'củng',ctx:'Em ___ thích đi học.'},{c:'mở',w:'mỡ',ctx:'Bé ___ cửa sổ cho thoáng.'},{c:'tủ',w:'tũ',ctx:'Mẹ cất sách trong cái ___ gỗ.'},{c:'vẫn',w:'vẩn',ctx:'Trời mưa nhưng em ___ đến lớp.'}];const o=[];const p=shuffle(W);for(let i=0;i<5;i++){const it=p[i%p.length];const ds=W.filter(x=>x.c!==it.c).map(x=>x.w);const ch=shuffle([it.c,it.w,...ds.slice(0,2)]);o.push({prompt:`Điền đúng: "${it.ctx}"`,choices:ch,answerIndex:ch.indexOf(it.c),explanation:`"${it.c}" là từ chuẩn (chú ý dấu).`})}return o}}
   ]
 };
 
@@ -240,25 +258,61 @@ const TOPICS_LAM={
     {id:'g4-fr',e:'🍰',t:'Phân số khác mẫu',d:'Nhìn bánh đếm phần',
      ex:[{p:'Cộng 2 phần bánh dưới đây:',kind:'fraction',f1:{n:1,d:2},f2:{n:1,d:3},op:'+',steps:['Mẫu chung của 2 và 3 là 6 → chia mỗi bánh thành 6 phần.','Bánh 1 (1/2) = 3/6 (chia đôi thành 6).','Bánh 2 (1/3) = 2/6 (chia ba thành 6).','3/6 + 2/6 = 5/6 phần bánh.'],a:'5/6'}],
      gen:()=>{const P=[[2,3,6],[2,4,4],[3,6,6],[2,6,6],[3,4,12]];const o=[];for(let i=0;i<5;i++){const p=P[rand(0,P.length-1)];const a=rand(1,p[0]-1),b=rand(1,p[1]-1);const nA=a*(p[2]/p[0]),nB=b*(p[2]/p[1]),cN=nA+nB;const c=`${cN}/${p[2]}`;const ds=new Set([c]);while(ds.size<4){const x=rand(1,p[2]*2),k=`${x}/${p[2]}`;if(k!==c)ds.add(k)}const ch=shuffle([...ds]);o.push({prompt:'Cộng 2 phần bánh:',kind:'fraction',f1:{n:a,d:p[0]},f2:{n:b,d:p[1]},op:'+',choices:ch,answerIndex:ch.indexOf(c),explanation:`Quy đồng mẫu ${p[2]}: ${a}/${p[0]}=${nA}/${p[2]}, ${b}/${p[1]}=${nB}/${p[2]}. Tổng: ${nA}/${p[2]} + ${nB}/${p[2]} = ${c}.`})}return o}},
+    {id:'g4-dec',e:'💯',t:'Số thập phân',d:'Cộng/trừ thập phân',
+     ex:[{p:'3,5 + 2,7 = ?',steps:['Đặt dấu phẩy thẳng cột.','5+7=12, viết 2 nhớ 1.','3+2=5, +1 nhớ = 6.','Đáp số: 6,2.'],a:'6,2'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const isAdd=Math.random()<.5;const a=rand(15,80)/10;const b=isAdd?rand(10,50)/10:rand(10,Math.floor(a*10))/10;const c=isAdd?+(a+b).toFixed(1):+(a-b).toFixed(1);const cs=c.toFixed(1).replace('.',',');const ds=new Set([cs]);while(ds.size<4){const delta=rand(-15,15)/10;const cand=+(c+delta).toFixed(1);if(cand>=0&&cand!==c)ds.add(cand.toFixed(1).replace('.',','))}const ch=shuffle([...ds]);o.push({prompt:`${a.toFixed(1).replace('.',',')} ${isAdd?'+':'−'} ${b.toFixed(1).replace('.',',')} = ?`,choices:ch,answerIndex:ch.indexOf(cs),explanation:`Đặt dấu phẩy thẳng cột → ${cs}.`})}return o}},
+    {id:'g4-x',e:'❓',t:'Tìm x',d:'2x + 3 = 11',
+     ex:[{p:'2x + 3 = 11. Tìm x.',steps:['Trừ 3 cả 2 vế: 2x = 8.','Chia 2: x = 4.'],a:'4'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const a=rand(2,6),x=rand(2,12),b=rand(1,15);const c=a*x+b;o.push({prompt:`${a}x + ${b} = ${c}. x = ?`,...numChoices(x,4),explanation:`Trừ ${b}: ${a}x=${c-b}. Chia ${a}: x=${x}.`})}return o}},
+    {id:'g4-tri',e:'🔺',t:'Diện tích tam giác',d:'(đáy × cao) ÷ 2',
+     ex:[{p:'Tam giác đáy 8 cm, cao 5 cm. Diện tích?',steps:['Công thức: S = (đáy × cao) ÷ 2.','(8 × 5) ÷ 2 = 40 ÷ 2 = 20.','Đáp số: 20 cm².'],a:'20 cm²'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const b=rand(4,16),h=rand(2,12)*2/2,c=Math.round(b*h/2);o.push({prompt:`Tam giác đáy ${b} cm, cao ${h} cm. Diện tích = ? cm²`,...numChoices(c,12),explanation:`(${b}×${h})÷2 = ${c} cm².`})}return o}},
     {id:'g4-div',e:'🔢',t:'Dấu hiệu chia hết',d:'Cho 2,3,5,9',adv:true,
      ex:[{p:'Số 2735 chia hết cho 5 không?',steps:['Tận cùng là 5 → có chia hết cho 5.'],a:'Có'}],
-     gen:()=>{const o=[];for(let i=0;i<5;i++){const div=[2,3,5,9][rand(0,3)];const yes=Math.random()<.5;const n=yes?div*rand(20,80):div*rand(20,80)+(div<6?1:rand(1,div-1));const ch=['Có','Không'];o.push({prompt:`Số ${n} có chia hết cho ${div} không?`,choices:ch,answerIndex:ch.indexOf(yes?'Có':'Không'),explanation:`${n} ${yes?'chia hết':'không chia hết'} cho ${div}.`})}return o}}
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const div=[2,3,5,9][rand(0,3)];const yes=Math.random()<.5;const n=yes?div*rand(20,80):div*rand(20,80)+(div<6?1:rand(1,div-1));const ch=['Có','Không'];o.push({prompt:`Số ${n} có chia hết cho ${div} không?`,choices:ch,answerIndex:ch.indexOf(yes?'Có':'Không'),explanation:`${n} ${yes?'chia hết':'không chia hết'} cho ${div}.`})}return o}},
+    {id:'g4-gcd',e:'🔗',t:'ƯCLN & BCNN',d:'Ước/bội chung',adv:true,
+     ex:[{p:'Tìm BCNN của 4 và 6.',steps:['Bội của 4: 4, 8, 12, 16, 20, 24...','Bội của 6: 6, 12, 18, 24...','Bội chung nhỏ nhất: 12.'],a:'12'}],
+     gen:()=>{const gcd=(a,b)=>b===0?a:gcd(b,a%b);const lcm=(a,b)=>a*b/gcd(a,b);const o=[];for(let i=0;i<5;i++){const isLcm=Math.random()<.5;const a=[4,6,8,9,10,12][rand(0,5)],b=[3,5,6,8,9,12][rand(0,5)];const c=isLcm?lcm(a,b):gcd(a,b);o.push({prompt:isLcm?`Tìm BCNN của ${a} và ${b}.`:`Tìm ƯCLN của ${a} và ${b}.`,...numChoices(c,8),explanation:isLcm?`BCNN(${a},${b}) = ${c}.`:`ƯCLN(${a},${b}) = ${c}.`})}return o}},
+    {id:'g4-sd',e:'➕',t:'Tổng - Hiệu',d:'Tìm 2 số',adv:true,
+     ex:[{p:'Hai số có tổng 84, hiệu 12. Tìm số lớn.',steps:['Số lớn = (Tổng + Hiệu) ÷ 2.','(84 + 12) ÷ 2 = 48.'],a:'48'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const big=rand(20,80),small=rand(5,big-3);const sum=big+small,diff=big-small;const findBig=Math.random()<.5;const c=findBig?big:small;o.push({prompt:`Hai số có tổng ${sum}, hiệu ${diff}. Tìm số ${findBig?'lớn':'bé'}.`,...numChoices(c,8),explanation:findBig?`Số lớn = (${sum}+${diff})÷2 = ${c}.`:`Số bé = (${sum}−${diff})÷2 = ${c}.`})}return o}},
+    {id:'g4-mean',e:'⚖️',t:'Trung bình cộng',d:'TBC của 3 số',adv:true,
+     ex:[{p:'TBC của 12, 18, 30 = ?',steps:['Tổng 3 số = 12+18+30 = 60.','TBC = 60 ÷ 3 = 20.'],a:'20'}],
+     gen:()=>{const o=[];let safe=0;while(o.length<5&&safe<50){safe++;const a=rand(10,40),b=rand(10,40),c=rand(10,40);const sum=a+b+c;if(sum%3!==0)continue;const mean=sum/3;o.push({prompt:`TBC của ${a}, ${b}, ${c} = ?`,...numChoices(mean,5),explanation:`(${a}+${b}+${c})÷3 = ${sum}÷3 = ${mean}.`})}return o}},
+    {id:'g4-seq',e:'🔮',t:'Dãy số quy luật',d:'Tìm số tiếp theo',adv:true,
+     ex:[{p:'2, 5, 11, 23, ?',steps:['5 = 2×2+1. 11 = 5×2+1. 23 = 11×2+1.','Quy luật: số sau = số trước × 2 + 1.','23 × 2 + 1 = 47.'],a:'47'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const mode=rand(0,1);let seq,next,why;if(mode===0){const start=rand(2,10),step=rand(2,7);seq=[start,start+step,start+2*step,start+3*step];next=start+4*step;why=`Mỗi số tăng thêm ${step}.`}else{const start=rand(1,5),k=rand(0,3);seq=[start];for(let j=0;j<3;j++)seq.push(seq[j]*2+k);next=seq[3]*2+k;why=`Số sau = số trước × 2${k>0?' + '+k:''}.`}o.push({prompt:`Tìm số tiếp theo: ${seq.join(', ')}, ?`,...numChoices(next,12),explanation:`${why} Số tiếp: ${next}.`})}return o}},
+    {id:'hn-age',e:'👨‍👩‍👧',t:'Bài toán tuổi',d:'Olympic CLC HN',adv:true,examFlag:true,
+     ex:[{p:'Bố 36, con 6. Sau bao năm bố gấp 3 lần con?',steps:['Hiệu tuổi không đổi: 36-6 = 30.','Khi bố=3×con: hiệu = 2×con = 30 → con = 15.','Số năm cần: 15-6 = 9.'],a:'9 năm'}],
+     gen:()=>{const o=[];let safe=0;while(o.length<5&&safe<50){safe++;const father=rand(28,45),child=rand(4,10);const k=[3,4,5][rand(0,2)];const diff=father-child;if(diff%(k-1)!==0)continue;const childThen=diff/(k-1);const yearsLater=childThen-child;if(yearsLater<=0)continue;o.push({prompt:`Bố ${father} tuổi, con ${child} tuổi. Sau bao năm bố gấp ${k} lần con?`,...numChoices(yearsLater,4),explanation:`Hiệu ${diff} không đổi. Bố=${k}×con → con=${childThen}. Sau ${yearsLater} năm.`})}return o}},
+    {id:'hn-pipes',e:'🚰',t:'Hai vòi nước',d:'Bài làm chung CLC HN',adv:true,examFlag:true,
+     ex:[{p:'Vòi A đầy bể trong 6h, vòi B trong 3h. Cùng chảy đầy bể trong?',steps:['1h vòi A: 1/6 bể.','1h vòi B: 1/3 = 2/6 bể.','Cùng chảy: 1/6+2/6 = 3/6 = 1/2 bể/giờ.','Đầy bể (1) cần: 1÷1/2 = 2 giờ.'],a:'2 giờ'}],
+     gen:()=>{const pairs=[[6,3],[4,4],[12,6],[4,12],[8,8],[3,6]];const o=[];let safe=0;while(o.length<5&&safe<30){safe++;const [a,b]=pairs[rand(0,pairs.length-1)];const ans=(a*b)/(a+b);if(ans%1!==0)continue;o.push({prompt:`Vòi A đầy bể trong ${a}h, vòi B ${b}h. Cùng chảy đầy bể trong mấy h?`,...numChoices(ans,3),explanation:`1/${a}+1/${b}=${a+b}/${a*b}. Thời gian = ${a*b}/${a+b} = ${ans}h.`})}return o}}
   ],
   english:[
     {id:'g4-pi',e:'⏳',t:'Past bất quy tắc',d:'go→went, eat→ate',lang:'en-US',
      ex:[{p:'Yesterday I ___ to the park. (go)',steps:['"Yesterday" → quá khứ đơn.','"go" → "went".'],a:'went'}],
      gen:()=>{const V=[['go','went'],['eat','ate'],['see','saw'],['take','took'],['write','wrote']];const o=[];for(let i=0;i<5;i++){const v=V[rand(0,V.length-1)];const ch=shuffle([v[1],v[0]+'ed',v[0],V.find(x=>x[0]!==v[0])[1]]);o.push({prompt:`Yesterday I ___ ... (${v[0]})`,choices:ch,answerIndex:ch.indexOf(v[1]),explanation:`"${v[0]}" bất quy tắc → "${v[1]}".`,speakLang:'en-US'})}return o}},
-    {id:'hn-ph',e:'🗣️',t:'Phát âm',d:'Phonetics CLC HN',adv:true,examFlag:true,lang:'en-US',
+    {id:'g4-mod',e:'⚙️',t:'Modal verbs',d:'can / must / should',lang:'en-US',
+     ex:[{p:'You ___ wear a helmet. (luật an toàn)',steps:['"Must" = bắt buộc (luật).','"Should" = nên (lời khuyên).','"Can" = có thể (khả năng).','Đội mũ = bắt buộc → "must".'],a:'must'}],
+     gen:()=>{const C=[{p:'Birds ___ fly.',a:'can',w:'"Can" = khả năng. Chim bay được.'},{p:'You ___ stop at red lights.',a:'must',w:'Luật giao thông → "must" (bắt buộc).'},{p:'You ___ drink more water.',a:'should',w:'Lời khuyên → "should" (nên).'},{p:'I ___ swim very fast.',a:'can',w:'"Can" = thể hiện khả năng.'},{p:'You ___ brush your teeth twice a day.',a:'should',w:'Lời khuyên cho điều tốt → "should".'}];const o=[];for(let i=0;i<5;i++){const c=C[i%C.length];const ch=shuffle([c.a,...['can','must','should','will'].filter(x=>x!==c.a).slice(0,3)]);o.push({prompt:c.p,choices:ch,answerIndex:ch.indexOf(c.a),explanation:c.w,speakLang:'en-US'})}return o}},
+    {id:'hn-ph',e:'🗣️',t:'Phát âm (Phonetics)',d:'CLC HN',adv:true,examFlag:true,lang:'en-US',
      ex:[{p:'Chọn từ có "a" phát âm khác:\nA) cat  B) bag  C) face  D) man',steps:['cat /kæt/, bag /bæg/, man /mæn/ — /æ/.','face /feɪs/ — /eɪ/.','Chọn C.'],a:'C) face'}],
-     gen:()=>{const B=[{o:'face',c:['cat','bag','man'],w:'face có /eɪ/, 3 từ kia /æ/.'},{o:'book',c:['food','moon','pool'],w:'book có /ʊ/, 3 từ kia /uː/.'},{o:'this',c:['think','thank','three'],w:'this có /ð/ (rung), 3 từ kia /θ/ (không rung).'},{o:'kite',c:['sit','big','win'],w:'kite có /aɪ/, 3 từ kia /ɪ/.'},{o:'bread',c:['sea','tea','meet'],w:'bread có /e/, 3 từ kia /iː/.'}];const o=[];const p=shuffle(B);for(let i=0;i<5;i++){const it=p[i%p.length];const all=shuffle([it.o,...it.c]);const labels=['A','B','C','D'];const ch=all.map((w,k)=>`${labels[k]}) ${w}`);o.push({prompt:`Chọn từ phát âm khác:\n${ch.join('  ')}`,choices:ch,answerIndex:all.indexOf(it.o),explanation:it.w,speak:all.join(', '),speakLang:'en-US'})}return o}}
+     gen:()=>{const B=[{o:'face',c:['cat','bag','man'],w:'face có /eɪ/, 3 từ kia /æ/.'},{o:'book',c:['food','moon','pool'],w:'book có /ʊ/, 3 từ kia /uː/.'},{o:'this',c:['think','thank','three'],w:'this có /ð/ (rung), 3 từ kia /θ/ (không rung).'},{o:'kite',c:['sit','big','win'],w:'kite có /aɪ/, 3 từ kia /ɪ/.'},{o:'bread',c:['sea','tea','meet'],w:'bread có /e/, 3 từ kia /iː/.'}];const o=[];const p=shuffle(B);for(let i=0;i<5;i++){const it=p[i%p.length];const all=shuffle([it.o,...it.c]);const labels=['A','B','C','D'];const ch=all.map((w,k)=>`${labels[k]}) ${w}`);o.push({prompt:`Chọn từ phát âm khác:\n${ch.join('  ')}`,choices:ch,answerIndex:all.indexOf(it.o),explanation:it.w,speak:all.join(', '),speakLang:'en-US'})}return o}},
+    {id:'hn-st',e:'🎯',t:'Trọng âm (Stress)',d:'CLC HN',adv:true,examFlag:true,lang:'en-US',
+     ex:[{p:'Chọn từ trọng âm khác:\nA) teacher  B) doctor  C) banana  D) student',steps:['TEA-cher, DOC-tor, STU-dent — 2 âm tiết, stress đầu.','ba-NA-na — 3 âm tiết, stress giữa.','Chọn C.'],a:'C) banana'}],
+     gen:()=>{const B=[{o:'banana',c:['teacher','doctor','student'],w:'"banana" 3 âm tiết stress giữa, 3 từ kia 2 âm tiết stress đầu.'},{o:'computer',c:['family','beautiful','difficult'],w:'"computer" stress 2, 3 từ kia stress 1.'},{o:'today',c:['table','sister','happy'],w:'"today" stress 2 (tiền tố to-).'},{o:'umbrella',c:['library','animal','energy'],w:'"umbrella" stress giữa, 3 từ kia stress đầu.'}];const o=[];const p=shuffle(B);for(let i=0;i<5;i++){const it=p[i%p.length];const all=shuffle([it.o,...it.c]);const labels=['A','B','C','D'];const ch=all.map((w,k)=>`${labels[k]}) ${w}`);o.push({prompt:`Chọn từ trọng âm khác:\n${ch.join('  ')}`,choices:ch,answerIndex:all.indexOf(it.o),explanation:it.w,speak:all.join(', '),speakLang:'en-US'})}return o}}
   ],
   vietnamese:[
     {id:'vn-sp',e:'✏️',t:'Chính tả',d:'l/n, ch/tr',adv:true,
      ex:[{p:'Em ___ bài tập. (làm/nàm)',steps:['"Làm" viết bằng L.'],a:'làm'}],
      gen:()=>{const W=[{c:'làm',w:'nàm',ctx:'Em ___ bài tập về nhà.'},{c:'trẻ',w:'chẻ',ctx:'Các em ___ rất ngoan.'},{c:'sạch',w:'xạch',ctx:'Bé giữ tay luôn ___.'},{c:'nóng',w:'lóng',ctx:'Mùa hè trời rất ___.'},{c:'sữa',w:'sửa',ctx:'Bé uống một ly ___.'}];const o=[];const p=shuffle(W);for(let i=0;i<5;i++){const it=p[i%p.length];const ds=W.filter(x=>x.c!==it.c).map(x=>x.w);const ch=shuffle([it.c,it.w,...ds.slice(0,2)]);o.push({prompt:`Điền từ đúng: "${it.ctx}"`,choices:ch,answerIndex:ch.indexOf(it.c),explanation:`"${it.c}" là từ chuẩn.`})}return o}},
-    {id:'hn-sty',e:'✍️',t:'Câu kể/hỏi/cảm',d:'CLC Hà Nội',adv:true,examFlag:true,
-     ex:[{p:'"Ôi, bông hoa đẹp quá!" loại câu nào?',steps:['"Ôi" + "!" → câu cảm.'],a:'Câu cảm'}],
-     gen:()=>{const S=[['Hôm nay trời rất đẹp.','Câu kể'],['Bố đi đâu rồi?','Câu hỏi'],['Ôi, bông hoa đẹp quá!','Câu cảm'],['Bạn tên là gì?','Câu hỏi'],['Tuyệt vời!','Câu cảm'],['Bé Vy đang học bài.','Câu kể']];const o=[];const p=shuffle(S);for(let i=0;i<5;i++){const it=p[i%p.length];const ch=shuffle(['Câu kể','Câu hỏi','Câu cảm','Câu khiến']);o.push({prompt:`Câu "${it[0]}" loại nào?`,choices:ch,answerIndex:ch.indexOf(it[1]),explanation:`Dấu hiệu: ${it[1]==='Câu kể'?'kết thúc bằng dấu chấm':it[1]==='Câu hỏi'?'có dấu hỏi cuối':'có dấu chấm than và từ cảm thán'}.`})}return o}}
+    {id:'g4-sty',e:'✍️',t:'Câu kể / hỏi / cảm',d:'Phân loại câu',
+     ex:[{p:'"Ôi, bông hoa đẹp quá!" loại câu nào?',steps:['Câu kể: thông báo, dấu chấm.','Câu hỏi: có từ nghi vấn, dấu hỏi.','Câu cảm: bộc lộ cảm xúc, có "ôi/quá", dấu than.','Câu này có "Ôi" và "!" → câu cảm.'],a:'Câu cảm'}],
+     gen:()=>{const S=[['Hôm nay trời rất đẹp.','Câu kể','dấu chấm cuối câu'],['Bố đi đâu rồi?','Câu hỏi','có "đâu" và dấu hỏi'],['Ôi, bông hoa đẹp quá!','Câu cảm','có "Ôi", "quá" và dấu than'],['Bạn tên là gì?','Câu hỏi','có "gì" và dấu hỏi'],['Tuyệt vời!','Câu cảm','bộc lộ cảm xúc, dấu than'],['Bé Vy đang học bài.','Câu kể','thông báo hành động']];const o=[];const p=shuffle(S);for(let i=0;i<5;i++){const it=p[i%p.length];const ch=shuffle(['Câu kể','Câu hỏi','Câu cảm','Câu khiến']);o.push({prompt:`Câu "${it[0]}" loại nào?`,choices:ch,answerIndex:ch.indexOf(it[1]),explanation:`Dấu hiệu: ${it[2]}.`})}return o}},
+    {id:'g4-syn',e:'🔄',t:'Đồng nghĩa / Trái nghĩa',d:'Tìm từ cùng/trái nghĩa',adv:true,
+     ex:[{p:'Từ ĐỒNG NGHĨA với "chăm chỉ" là gì?',steps:['"Chăm chỉ" = làm việc đều đặn, không lười.','Tìm từ cùng nghĩa: "siêng năng".','"Thông minh" là tính cách khác.'],a:'siêng năng'}],
+     gen:()=>{const W=[{w:'chăm chỉ',syn:'siêng năng',ant:'lười biếng',sOpt:['siêng năng','thông minh','khỏe mạnh','vui vẻ'],aOpt:['lười biếng','nhanh nhẹn','cao lớn','thân thiện']},{w:'to lớn',syn:'khổng lồ',ant:'bé nhỏ',sOpt:['khổng lồ','mềm mại','nhanh chóng','sạch sẽ'],aOpt:['bé nhỏ','nặng nề','xanh xao','vui vẻ']},{w:'vui vẻ',syn:'sung sướng',ant:'buồn bã',sOpt:['sung sướng','cao lớn','nhanh nhẹn','sạch sẽ'],aOpt:['buồn bã','thông minh','khỏe mạnh','mềm mại']},{w:'nhanh',syn:'mau lẹ',ant:'chậm',sOpt:['mau lẹ','thông minh','cao','mạnh'],aOpt:['chậm','sạch','đẹp','vui']},{w:'đẹp',syn:'xinh xắn',ant:'xấu',sOpt:['xinh xắn','lớn','nhanh','mạnh'],aOpt:['xấu','cao','nhanh','mới']}];const o=[];const p=shuffle(W);for(let i=0;i<5;i++){const it=p[i%p.length];const askSyn=Math.random()<.5;const correct=askSyn?it.syn:it.ant;const ch=shuffle(askSyn?it.sOpt:it.aOpt);o.push({prompt:`Từ ${askSyn?'ĐỒNG NGHĨA':'TRÁI NGHĨA'} với "${it.w}" là gì?`,choices:ch,answerIndex:ch.indexOf(correct),explanation:askSyn?`"${it.w}" và "${it.syn}" cùng nghĩa.`:`"${it.w}" và "${it.ant}" trái nghĩa.`})}return o}}
   ]
 };
 
@@ -566,11 +620,29 @@ function clockSVG(time,size){
   </svg>`;
 }
 
+// ==== Phân loại cấp độ topic ====
+// basic = không có flag, advanced = có adv (không examFlag), exam = có examFlag
+function topicLevel(t){
+  if(t.examFlag)return 'exam';
+  if(t.adv)return 'advanced';
+  return 'basic';
+}
+
+// Đếm số topic theo cấp độ (gộp tất cả 3 môn)
+function countLevel(profile,level){
+  const T=profile==='vy'?TOPICS_VY:TOPICS_LAM;
+  let n=0;
+  ['math','english','vietnamese'].forEach(subj=>{
+    (T[subj]||[]).forEach(t=>{if(topicLevel(t)===level)n++});
+  });
+  return n;
+}
+
 // ==== State (transient) ====
-const state={screen:'select',profile:null,subj:null,topic:null,exIndex:0,stepShown:0,questions:[],qIndex:0,score:0,picked:null,lastResult:null,newAch:[]};
+const state={screen:'select',profile:null,level:'basic',subj:null,topic:null,exIndex:0,stepShown:0,questions:[],qIndex:0,score:0,picked:null,lastResult:null,newAch:[]};
 
 const render=()=>{
-  const r={select:renderSelect,dashboard:renderDashboard,topics:renderTopics,lesson:renderLesson,quiz:renderQuiz,result:renderResult};
+  const r={select:renderSelect,level:renderLevel,dashboard:renderDashboard,topics:renderTopics,lesson:renderLesson,quiz:renderQuiz,result:renderResult};
   (r[state.screen]||renderSelect)();
   if(state.newAch.length>0)showAchModal();
 };
@@ -584,20 +656,60 @@ function renderSelect(){
       ${Object.entries(PROFILES).map(([k,p])=>{const t=THEMES[p.theme];return `<div class="pcard ${p.theme}" data-p="${k}"><span class="tg">${t.label}</span><div class="av bouncer" style="display:flex;justify-content:center;margin:4px 0">${avatarOf(k)}</div><h3 class="nm">${p.name}</h3><p class="gr">Bé ${p.grade}</p></div>`}).join('')}
     </div>
     <p class="footer">v1.0 · Tối ưu iPad/iPhone — chạm là chơi, nghe giọng en-US</p>` + bgSceneHTML('default');
-  root.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{state.profile=b.dataset.p;state.screen='dashboard';render()});
+  root.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{state.profile=b.dataset.p;state.level='basic';state.screen='level';render()});
+}
+
+function renderLevel(){
+  const p=state.profile,info=PROFILES[p],t=THEMES[info.theme];
+  applyBodyTheme(t.id);
+  const cnt={basic:countLevel(p,'basic'),advanced:countLevel(p,'advanced'),exam:countLevel(p,'exam')};
+  const avatar=p==='vy'?princessChar('#92400E','#EC4899',46):blockyChar('#FBBF24','#3B82F6','#1E40AF',38);
+  // 3 cấp độ — nếu count = 0 thì disable thẻ
+  const levelCards=[
+    {id:'basic',e:'📚',title:'Cơ bản',desc:'Bài chuẩn theo SGK lớp '+(p==='vy'?'2':'4'),color:'linear-gradient(135deg,#4DC3FF,#6BE38E)',count:cnt.basic},
+    {id:'advanced',e:'🔥',title:'Nâng cao',desc:'Bài tập khó hơn, mở rộng kiến thức',color:'linear-gradient(135deg,#FB923C,#EF4444)',count:cnt.advanced},
+    {id:'exam',e:'🏆',title:'Luyện thi CLC',desc:p==='vy'?'Còn xa, lớn hơn rồi học nhé':'Luyện thi vào lớp 6 trường CLC',color:'linear-gradient(135deg,#7C3AED,#EC4899)',count:cnt.exam}
+  ];
+  root.innerHTML=`<div class="bar">
+    <div class="btn gray" id="back">← Đổi bé</div>
+    <div class="namebar" style="display:flex;align-items:center;gap:8px;justify-content:center"><div class="bouncer">${avatar}</div><div><p class="nm">${info.name}</p><p class="gr">${info.grade} · ${t.label}</p></div></div>
+    <span></span>
+  </div>
+  <h1 style="text-align:center;font-size:20px;color:#6B46C1;font-weight:500;margin:14px 0 4px">Hôm nay học cấp độ nào?</h1>
+  <p class="sub" style="text-align:center;color:#6B7280;font-size:12px;margin:0 0 14px">Chọn 1 trong 3 — đổi sau cũng được</p>
+  <div style="display:flex;flex-direction:column;gap:10px;padding:0 14px">
+    ${levelCards.map(L=>`<button class="lvl-card" data-l="${L.id}" ${L.count===0?'disabled':''} style="position:relative;background:${L.count===0?'#E5E7EB':L.color};color:${L.count===0?'#9CA3AF':'white'};border:none;border-radius:18px;padding:18px;font-family:inherit;cursor:${L.count===0?'not-allowed':'pointer'};text-align:left;display:flex;align-items:center;gap:14px;box-shadow:0 6px 16px rgba(0,0,0,.1);${L.count===0?'opacity:.7':''}">
+      <span style="font-size:42px">${L.e}</span>
+      <div style="flex:1">
+        <h3 style="margin:0;font-size:18px;font-weight:600">${L.title}</h3>
+        <p style="margin:4px 0 0;font-size:12px;opacity:.95">${L.desc}</p>
+      </div>
+      <span style="background:rgba(255,255,255,.3);padding:4px 10px;border-radius:99px;font-size:11px;font-weight:600">${L.count} bài</span>
+    </button>`).join('')}
+  </div>
+  <p style="text-align:center;font-size:11px;color:#6B7280;margin:16px 14px">💡 Mỗi cấp độ có nội dung khác nhau. Bé có thể đổi cấp độ trong Dashboard bất cứ lúc nào.</p>` + bgSceneHTML(t.id);
+  root.querySelector('#back').onclick=()=>{state.profile=null;state.screen='select';render()};
+  root.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{if(b.disabled)return;state.level=b.dataset.l;state.screen='dashboard';render()});
 }
 
 function renderDashboard(){
   const p=state.profile,info=PROFILES[p],t=THEMES[info.theme];
-  applyBodyTheme(t.id); // gắn class background theo theme
+  applyBodyTheme(t.id);
   const streakNow=getStreak(p).cur;
   const coins=getCoins(p);
-  // Avatar SVG to ở header
   const avatar=p==='vy'?princessChar('#92400E','#EC4899',38):blockyChar('#FBBF24','#3B82F6','#1E40AF',32);
+  // Pill cấp độ hiện tại + nút đổi
+  const lvlInfo={basic:{e:'📚',name:'Cơ bản',color:'linear-gradient(90deg,#4DC3FF,#6BE38E)'},
+    advanced:{e:'🔥',name:'Nâng cao',color:'linear-gradient(90deg,#FB923C,#EF4444)'},
+    exam:{e:'🏆',name:'Luyện thi CLC',color:'linear-gradient(90deg,#7C3AED,#EC4899)'}}[state.level];
   root.innerHTML=`<div class="bar">
     <div class="btn gray" id="back">← Đổi</div>
     <div class="namebar" style="display:flex;align-items:center;gap:8px;justify-content:center"><div class="bouncer">${avatar}</div><div><p class="nm">${info.name}</p><p class="gr">${info.grade} · ${t.label}</p></div></div>
     <div style="display:flex;gap:6px">${streakNow>0?`<span class="streak">🔥 ${streakNow}</span>`:''}<span class="coins">🪙 ${coins}</span></div>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.85);border-radius:12px;padding:8px 12px;margin-bottom:10px;backdrop-filter:blur(6px)">
+    <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#374151">Cấp độ:<span style="background:${lvlInfo.color};color:white;padding:5px 12px;border-radius:99px;font-weight:600;font-size:12px">${lvlInfo.e} ${lvlInfo.name}</span></span>
+    <button class="btn" id="changeLevel" style="padding:6px 12px;font-size:11px;background:#A678FF;color:white;border:none;border-radius:99px;font-weight:500;cursor:pointer">🔄 Đổi cấp độ</button>
   </div>
   <p class="sub">Chọn môn học</p>
   <div class="subjs">
@@ -606,25 +718,29 @@ function renderDashboard(){
     <div class="scard" data-s="vietnamese" style="background:linear-gradient(135deg,#34D399,#0D9488)"><span class="e">📖</span><h3 class="ct">Tiếng Việt</h3><p class="cd">Chính tả, đọc hiểu</p></div>
   </div>` + bgSceneHTML(t.id);
   root.querySelector('#back').onclick=()=>{state.profile=null;state.screen='select';render()};
+  root.querySelector('#changeLevel').onclick=()=>{state.screen='level';render()};
   root.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{state.subj=b.dataset.s;state.screen='topics';render()});
 }
 
 function renderTopics(){
   const p=state.profile,info=PROFILES[p],t=THEMES[info.theme];
   const TOPICS=p==='vy'?TOPICS_VY:TOPICS_LAM;
-  const list=TOPICS[state.subj]||[];
+  const allList=TOPICS[state.subj]||[];
+  // Lọc theo cấp độ đang chọn
+  const list=allList.filter(top=>topicLevel(top)===state.level);
+  const lvlInfo={basic:{e:'📚',name:'Cơ bản',color:'#4DC3FF'},advanced:{e:'🔥',name:'Nâng cao',color:'#FB923C'},exam:{e:'🏆',name:'Luyện thi CLC',color:'#7C3AED'}}[state.level];
   root.innerHTML=`<div class="bar">
     <div class="btn gray" id="back">← Quay</div>
-    <div class="namebar"><p class="nm">${t.avatar} ${info.name}</p><p class="gr">${info.grade}</p></div>
+    <div class="namebar"><p class="nm">${t.avatar} ${info.name}</p><p class="gr">${info.grade} · ${lvlInfo.e} ${lvlInfo.name}</p></div>
     <span class="coins">🪙 ${getCoins(p)}</span>
   </div>
   <div class="section-row">
-    <span class="section-tag" style="background:#A678FF">📚 ${info.grade} của bé</span>
-    <span class="section-hint">— bài học chính</span>
+    <span class="section-tag" style="background:${lvlInfo.color}">${lvlInfo.e} ${lvlInfo.name}</span>
+    <span class="section-hint">— ${list.length} bài cho môn này</span>
   </div>
-  <div class="tgrid">
+  ${list.length===0?`<div style="background:white;border-radius:14px;padding:24px;text-align:center;color:#6B7280;margin:14px 0"><p style="font-size:36px;margin:0 0 8px">😅</p><p style="margin:0;font-size:14px;font-weight:500">Chưa có bài <strong>${lvlInfo.name}</strong> cho môn này</p><p style="margin:8px 0 0;font-size:11px">Bấm "Đổi cấp độ" hoặc chọn môn khác nhé</p></div>`:`<div class="tgrid">
     ${list.map(top=>`<div class="topic ${top.adv?'adv':''}" data-t="${top.id}">${top.examFlag?'<span class="badge exam">🏆 CLC HN</span>':top.adv?'<span class="badge adv">🔥 Nâng cao</span>':''}<span class="e">${top.e}</span><h4 class="t">${top.t}</h4><p class="d">${top.d}</p><p class="h">📖 Xem ví dụ rồi làm bài</p></div>`).join('')}
-  </div>`;
+  </div>`}`;
   root.querySelector('#back').onclick=()=>{state.subj=null;state.screen='dashboard';render()};
   root.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{const top=list.find(x=>x.id===b.dataset.t);state.topic=top;state.exIndex=0;state.stepShown=0;state.screen='lesson';render()});
 }
