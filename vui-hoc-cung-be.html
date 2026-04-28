@@ -703,6 +703,9 @@ function cancelRedemption(p,redemptionId){
   LS.set('redeemed_'+p,list);
   return true;
 }
+// Số câu/session — gọi gen() nhiều lần ghép lại để có 30 câu/lượt
+const QPS=30;
+function buildQuestions(top){const out=[];let safe=0;while(out.length<QPS&&safe<20){out.push(...top.gen());safe++}return out.slice(0,QPS)}
 // Bố/mẹ tặng/trừ xu thủ công (thưởng/phạt)
 function adjustCoins(p,delta){
   setCoins(p,Math.max(0,getCoins(p)+delta));
@@ -989,6 +992,7 @@ function renderParent(){
         <button class="mini-btn add50" data-p="${p}" style="background:#047857;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">+50 🪙</button>
         <button class="mini-btn sub10" data-p="${p}" style="background:#F59E0B;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">−10 🪙</button>
         <button class="mini-btn reset" data-p="${p}" style="background:#9CA3AF;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">↻ Reset xu</button>
+        <button class="mini-btn resetAll" data-p="${p}" style="background:#DC2626;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">⚠️ Reset toàn bộ</button>
       </div>
       <div style="display:flex;gap:6px;margin-bottom:10px;align-items:center;background:rgba(255,255,255,.6);padding:8px 10px;border-radius:8px">
         <span style="font-size:11px;color:#374151;flex:1">🔑 PIN của ${info.name}: <strong style="color:${p==='vy'?'#BE185D':'#1E40AF'};letter-spacing:2px;font-family:monospace">${getKidPin(p)}</strong></span>
@@ -1011,7 +1015,8 @@ function renderParent(){
   ${profiles.map(profileBlock).join('')}
   ${progressTable()}
   <div style="background:#FEF3C7;border-radius:10px;padding:10px;font-size:11px;color:#92400E;margin-top:10px">
-    ⚠️ Khi <strong>Huỷ + hoàn xu</strong>: đơn quà sẽ bị xoá và xu được trả lại ví của bé. Khi <strong>Reset xu</strong>: ví về 0 nhưng lịch sử quà giữ nguyên. Hành động không thể hoàn tác.
+    💡 <strong>Mua quà:</strong> tự trừ xu ngay khi bé bấm "Đổi". Bố/mẹ chỉ duyệt khi đã trao tay.<br>
+    ⚠️ <strong>Huỷ + hoàn xu:</strong> xoá đơn quà & trả xu về ví bé. <strong>Reset xu:</strong> ví về 0 (giữ huy hiệu/streak). <strong>Reset toàn bộ:</strong> xoá hết tiến độ học. Đều KHÔNG THỂ HOÀN TÁC.
   </div>`;
   root.querySelector('#back').onclick=()=>{state.screen='select';render()};
   root.querySelector('#changePin').onclick=()=>{
@@ -1034,7 +1039,21 @@ function renderParent(){
   root.querySelectorAll('.add50').forEach(b=>b.onclick=()=>{adjustCoins(b.dataset.p,50);render()});
   root.querySelectorAll('.sub10').forEach(b=>b.onclick=()=>{adjustCoins(b.dataset.p,-10);render()});
   root.querySelectorAll('.reset').forEach(b=>b.onclick=()=>{
-    if(confirm(`Đặt lại ví xu của ${PROFILES[b.dataset.p].name} về 0?`)){setCoins(b.dataset.p,0);render()}
+    if(confirm(`Đặt lại ví xu của ${PROFILES[b.dataset.p].name} về 0?\n\n(Chỉ xoá xu — giữ lịch sử bài, huy hiệu, streak)`)){setCoins(b.dataset.p,0);render()}
+  });
+  root.querySelectorAll('.resetAll').forEach(b=>b.onclick=()=>{
+    const kp=b.dataset.p;
+    if(confirm(`⚠️ RESET TOÀN BỘ tiến độ của ${PROFILES[kp].name}?\n\nHành động này sẽ xoá:\n• Ví xu → 0\n• Tổng câu đúng → 0\n• Streak → 0\n• Huy hiệu đã mở → xoá hết\n• Lịch sử bài làm (để bảng tiến độ trống)\n\nLịch sử quà đã đổi vẫn giữ. KHÔNG THỂ HOÀN TÁC.`)){
+      if(confirm(`Xác nhận lần 2: thực sự xoá toàn bộ tiến độ của ${PROFILES[kp].name}?`)){
+        setCoins(kp,0);
+        setTotalCorrect(kp,0);
+        setStreak(kp,{cur:0,last:''});
+        setAch(kp,[]);
+        LS.set('attempts_'+kp,[]);
+        alert(`✅ Đã reset toàn bộ tiến độ của ${PROFILES[kp].name}.\n\nBé bắt đầu lại từ đầu nhé!`);
+        render();
+      }
+    }
   });
   root.querySelectorAll('.changeKidPin').forEach(b=>b.onclick=()=>{
     const kp=b.dataset.p;
@@ -1204,11 +1223,11 @@ function renderLesson(){
   root.querySelector('#back').onclick=()=>{state.screen='topics';render()};
   const spk=root.querySelector('#spk');if(spk)spk.onclick=e=>speak(ex.p,top.lang||'vi-VN',e.currentTarget);
   if(!allShown){const sk=root.querySelector('#skip');if(sk)sk.onclick=()=>{state.stepShown=total;render()};setTimeout(()=>{if(state.screen==='lesson'&&state.stepShown<total){state.stepShown++;render()}},1500)}
-  if(allShown){const go=root.querySelector('#go');if(go)go.onclick=()=>{state.questions=top.gen();state.qIndex=0;state.score=0;state.wrong=0;state.picked=null;state.screen='quiz';render()}}
+  if(allShown){const go=root.querySelector('#go');if(go)go.onclick=()=>{state.questions=buildQuestions(top);state.qIndex=0;state.score=0;state.wrong=0;state.picked=null;state.screen='quiz';render()}}
 }
 
 function renderQuiz(){
-  const q=state.questions[state.qIndex];const pct=((state.qIndex+1)/5)*100;
+  const q=state.questions[state.qIndex];const total=state.questions.length;const pct=((state.qIndex+1)/total)*100;
   const visual=(q.kind==='clock'?clockSVG(q.time,200):(q.kind==='fraction'?fracEqVisual(q.f1.n,q.f1.d,q.op,q.f2.n,q.f2.d,80):(q.kind==='addsub'?addSubVisual(q.n1,q.op,q.n2):(q.emoji?`<span class="qe">${q.emoji}</span>`:''))))+`<div class="qrow"><p class="qp" style="margin:0">${q.prompt}</p>${state.topic.lang||q.speakLang?`<button class="speaker" id="spk">🔊</button>`:''}</div>`;
   const choices=q.choices.map((c,i)=>{
     let cls='choice';
@@ -1221,7 +1240,7 @@ function renderQuiz(){
   const exBox=showExpl&&q.explanation?`<div class="explain"><p class="t">💡 Giải thích</p><p class="b">${q.explanation}</p></div>`:'';
   root.innerHTML=`<div class="bar">
     <div class="btn gray" id="exit">← Thoát</div>
-    <div class="namebar"><p class="nm">Câu ${state.qIndex+1} / 5</p></div>
+    <div class="namebar"><p class="nm">Câu ${state.qIndex+1} / ${total}</p></div>
     <span style="color:#D97706;font-weight:600">⭐ ${state.score}</span>
   </div>
   <div class="progress"><div style="width:${pct}%"></div></div>
@@ -1238,7 +1257,7 @@ function pick(i){
   if(correct){state.score++;celebrate()}else{state.wrong++}
   render();
   setTimeout(()=>{
-    if(state.qIndex===4){
+    if(state.qIndex===state.questions.length-1){
       const p=state.profile;
       const net=state.score-state.wrong;
       const oldBal=getCoins(p);
@@ -1249,7 +1268,7 @@ function pick(i){
       logAttempt(p,{d:new Date().toISOString().slice(0,10),s:state.subj,tid:state.topic.id,tn:state.topic.t,c:state.score,w:state.wrong});
       const newStreak=checkInToday(p);
       state.newAch=checkUnlocks(p);
-      state.lastResult={title:state.topic.t,correct:state.score,wrong:state.wrong,total:5,coinsNet:net,coinsReal:realDelta,newBal:newCoins,streak:newStreak,floored:net!==realDelta};
+      state.lastResult={title:state.topic.t,correct:state.score,wrong:state.wrong,total:state.questions.length,coinsNet:net,coinsReal:realDelta,newBal:newCoins,streak:newStreak,floored:net!==realDelta};
       state.screen='result';render();
     }else{state.qIndex++;state.picked=null;render()}
   },correct?1100:2200);
@@ -1292,6 +1311,25 @@ function showAchModal(){
   const list=newly.map(a=>`<div class="ach-item"><span class="ae">${a.e}</span><div><p class="at">${a.t}</p><p class="ad">${a.d}</p></div></div>`).join('');
   const ov=document.createElement('div');ov.className='modal-bg';
   ov.innerHTML=`<div class="ach-modal"><h2>🎊 Mở khoá huy hiệu mới!</h2>${list}<button class="closebtn" id="cls">Tuyệt! 🎉</button></div>`;
+  ov.onclick=e=>{if(e.target===ov||e.target.id==='cls'){state.newAch=[];ov.remove()}};
+  document.body.appendChild(ov);
+}
+
+if('speechSynthesis' in window){window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices()}
+
+render();
+})();
+</script>
+</body>
+</html>
+ window){window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices()}
+
+render();
+})();
+</script>
+</body>
+</html>
+uyệt! 🎉</button></div>`;
   ov.onclick=e=>{if(e.target===ov||e.target.id==='cls'){state.newAch=[];ov.remove()}};
   document.body.appendChild(ov);
 }
