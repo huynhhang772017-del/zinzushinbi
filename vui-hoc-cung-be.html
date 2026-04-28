@@ -8,7 +8,28 @@
 <title>Vui Học Cùng Bé</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-html,body{margin:0;padding:0;font-family:-apple-system,system-ui,'Segoe UI',Tahoma,sans-serif;font-size:16px;color:#1F2937;background:linear-gradient(135deg,#FFE7F4 0%,#E5F4FF 50%,#FFF7D6 100%);min-height:100vh;-webkit-text-size-adjust:100%;overflow-x:hidden}
+html,body{margin:0;padding:0;font-family:-apple-system,system-ui,'Segoe UI',Tahoma,sans-serif;font-size:16px;color:#1F2937;min-height:100vh;-webkit-text-size-adjust:100%;overflow-x:hidden;position:relative}
+body{background:linear-gradient(135deg,#FFE7F4 0%,#E5F4FF 50%,#FFF7D6 100%);background-size:400% 400%;animation:bgShift 20s ease infinite;transition:background .5s}
+@keyframes bgShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+body.theme-princess{background:linear-gradient(135deg,#FFD1E8,#F8B4E0,#FFE7F4,#FFD0E8,#FFF7D6);background-size:400% 400%;animation:bgShift 18s ease infinite}
+body.theme-blocky{background:linear-gradient(135deg,#06B6D4,#3B82F6,#10B981,#06B6D4);background-size:400% 400%;animation:bgShift 14s ease infinite}
+body.theme-blocky::before{content:'';position:fixed;inset:0;background-image:linear-gradient(45deg,transparent 48%,rgba(255,255,255,.06) 49%,rgba(255,255,255,.06) 51%,transparent 52%),linear-gradient(-45deg,transparent 48%,rgba(255,255,255,.06) 49%,rgba(255,255,255,.06) 51%,transparent 52%);background-size:40px 40px;animation:gridMv 25s linear infinite;z-index:0;pointer-events:none}
+@keyframes gridMv{from{background-position:0 0}to{background-position:80px 80px}}
+.bg-scene{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.bg-scene .float-emoji{position:absolute;font-size:24px;opacity:.7;animation:floatUp linear infinite;will-change:transform}
+@keyframes floatUp{0%{transform:translateY(110vh) rotate(0);opacity:0}10%{opacity:.8}90%{opacity:.6}100%{transform:translateY(-10vh) rotate(360deg);opacity:0}}
+.bg-scene .twinkle{position:absolute;width:8px;height:8px;background:white;border-radius:50%;box-shadow:0 0 12px white,0 0 20px rgba(255,200,230,.8);animation:twk 2.5s ease-in-out infinite}
+@keyframes twk{0%,100%{opacity:.3;transform:scale(.6)}50%{opacity:1;transform:scale(1.3)}}
+.bg-scene .pixel{position:absolute;animation:pxFall linear infinite;will-change:transform;border-radius:2px}
+@keyframes pxFall{0%{transform:translateY(-30px) rotate(0);opacity:0}10%{opacity:.8}90%{opacity:.6}100%{transform:translateY(110vh) rotate(360deg);opacity:0}}
+.bg-scene .glow{position:absolute;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.3),transparent 70%);animation:pulseGlow 4s ease-in-out infinite}
+@keyframes pulseGlow{0%,100%{transform:scale(.7);opacity:.3}50%{transform:scale(1.3);opacity:.6}}
+.bg-scene .castle{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:340px;opacity:.18;z-index:0;pointer-events:none}
+.bg-scene .floater{position:absolute;animation:floatLR linear infinite;will-change:transform;opacity:.85}
+@keyframes floatLR{0%{transform:translateX(-100px) translateY(0);opacity:0}10%{opacity:.85}50%{transform:translateX(50vw) translateY(-30px)}90%{opacity:.75}100%{transform:translateX(110vw) translateY(0);opacity:0}}
+.bouncer{animation:bounce 2s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.app{position:relative;z-index:5}
 button,input{font-family:inherit;font-size:inherit;border:none;cursor:pointer;-webkit-appearance:none}
 button{min-height:44px}
 .app{max-width:780px;margin:0 auto;padding:16px;min-height:100vh}
@@ -266,6 +287,187 @@ const speak=(text,lang,btn)=>{
   window.speechSynthesis.speak(u);
 };
 
+// ==== SVG nhân vật & đồ vật ====
+// Nhân vật Robloxian-style cho Thành Lâm
+function blockyChar(skin,shirt,pants,size){
+  size=size||60;
+  return `<svg viewBox="0 0 60 90" width="${size}" height="${size*1.5}" style="display:block">
+    <rect x="15" y="2" width="30" height="28" fill="${skin}" stroke="#1F2937" stroke-width="1.5"/>
+    <rect x="22" y="14" width="4" height="5" fill="#1F2937"/>
+    <rect x="34" y="14" width="4" height="5" fill="#1F2937"/>
+    <rect x="24" y="22" width="12" height="2" fill="#1F2937"/>
+    <rect x="22" y="20" width="2" height="2" fill="#1F2937"/>
+    <rect x="36" y="20" width="2" height="2" fill="#1F2937"/>
+    <rect x="18" y="32" width="24" height="24" fill="${shirt}" stroke="#1F2937" stroke-width="1.5"/>
+    <rect x="6" y="32" width="10" height="22" fill="${shirt}" stroke="#1F2937" stroke-width="1.5"/>
+    <rect x="44" y="32" width="10" height="22" fill="${shirt}" stroke="#1F2937" stroke-width="1.5"/>
+    <rect x="6" y="54" width="10" height="6" fill="${skin}" stroke="#1F2937" stroke-width="1.5"/>
+    <rect x="44" y="54" width="10" height="6" fill="${skin}" stroke="#1F2937" stroke-width="1.5"/>
+    <rect x="20" y="58" width="9" height="22" fill="${pants}" stroke="#1F2937" stroke-width="1.5"/>
+    <rect x="31" y="58" width="9" height="22" fill="${pants}" stroke="#1F2937" stroke-width="1.5"/>
+    <rect x="20" y="80" width="9" height="6" fill="#1F2937"/>
+    <rect x="31" y="80" width="9" height="6" fill="#1F2937"/>
+  </svg>`;
+}
+
+// Coin block (Robux-style)
+function blockCoin(size){
+  size=size||32;
+  return `<svg viewBox="0 0 40 40" width="${size}" height="${size}">
+    <rect x="4" y="4" width="32" height="32" fill="#FBBF24" stroke="#92400E" stroke-width="2" rx="2"/>
+    <rect x="10" y="10" width="20" height="20" fill="#FCD34D" rx="1"/>
+    <text x="20" y="27" font-size="18" font-weight="700" text-anchor="middle" fill="#92400E">$</text>
+  </svg>`;
+}
+
+// Game block decoration
+function gameBlock(color,size){
+  size=size||32;
+  return `<svg viewBox="0 0 40 40" width="${size}" height="${size}">
+    <rect x="3" y="3" width="34" height="34" fill="${color}" stroke="#1F2937" stroke-width="2" rx="3"/>
+    <rect x="8" y="8" width="10" height="10" fill="rgba(255,255,255,.4)" rx="1"/>
+  </svg>`;
+}
+
+// Princess character cho Phương Vy (custom illustration)
+function princessChar(hairColor,dressColor,size){
+  size=size||80;
+  hairColor=hairColor||'#92400E';
+  dressColor=dressColor||'#EC4899';
+  return `<svg viewBox="0 0 100 130" width="${size}" height="${size*1.3}" style="display:block">
+    <!-- crown -->
+    <polygon points="35,18 40,8 50,14 60,8 65,18" fill="#FBBF24" stroke="#92400E" stroke-width="1.5"/>
+    <circle cx="40" cy="11" r="2" fill="#EF4444"/>
+    <circle cx="50" cy="14" r="2" fill="#3B82F6"/>
+    <circle cx="60" cy="11" r="2" fill="#10B981"/>
+    <!-- hair back -->
+    <ellipse cx="50" cy="40" rx="28" ry="22" fill="${hairColor}"/>
+    <!-- face -->
+    <circle cx="50" cy="38" r="18" fill="#FED7AA" stroke="#92400E" stroke-width="1"/>
+    <!-- eyes -->
+    <ellipse cx="43" cy="36" rx="2.5" ry="3" fill="#1F2937"/>
+    <ellipse cx="57" cy="36" rx="2.5" ry="3" fill="#1F2937"/>
+    <circle cx="43.5" cy="35" r="0.8" fill="white"/>
+    <circle cx="57.5" cy="35" r="0.8" fill="white"/>
+    <!-- blush -->
+    <circle cx="40" cy="42" r="2.5" fill="#FB7185" opacity=".5"/>
+    <circle cx="60" cy="42" r="2.5" fill="#FB7185" opacity=".5"/>
+    <!-- smile -->
+    <path d="M44 45 Q50 50 56 45" stroke="#9D174D" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <!-- hair front bangs -->
+    <path d="M32 30 Q40 22 50 24 Q60 22 68 30 Q60 28 50 30 Q40 28 32 30" fill="${hairColor}"/>
+    <!-- dress (puffy bell shape) -->
+    <path d="M38 60 L62 60 L70 100 L80 110 L20 110 L30 100 Z" fill="${dressColor}" stroke="#9D174D" stroke-width="1.5"/>
+    <!-- dress decoration -->
+    <circle cx="50" cy="75" r="3" fill="#FBBF24"/>
+    <circle cx="42" cy="85" r="2" fill="white"/>
+    <circle cx="58" cy="85" r="2" fill="white"/>
+    <circle cx="50" cy="95" r="2" fill="white"/>
+    <!-- arms -->
+    <ellipse cx="32" cy="68" rx="4" ry="10" fill="#FED7AA" stroke="#92400E" stroke-width="1"/>
+    <ellipse cx="68" cy="68" rx="4" ry="10" fill="#FED7AA" stroke="#92400E" stroke-width="1"/>
+    <!-- magic wand in right hand -->
+    <line x1="72" y1="74" x2="80" y2="62" stroke="#92400E" stroke-width="2"/>
+    <polygon points="80,62 76,58 80,54 84,58" fill="#FBBF24" stroke="#92400E" stroke-width="1"/>
+    <!-- sparkle on wand -->
+    <circle cx="80" cy="58" r="1.5" fill="white"/>
+  </svg>`;
+}
+
+// Castle silhouette với nhiều tầng tháp
+function castleSVG(){
+  return `<svg viewBox="0 0 340 130" xmlns="http://www.w3.org/2000/svg">
+    <rect x="20" y="80" width="50" height="50" fill="#9D174D"/>
+    <rect x="80" y="60" width="50" height="70" fill="#9D174D"/>
+    <rect x="140" y="40" width="60" height="90" fill="#9D174D"/>
+    <rect x="210" y="60" width="50" height="70" fill="#9D174D"/>
+    <rect x="270" y="80" width="50" height="50" fill="#9D174D"/>
+    <polygon points="20,80 45,55 70,80" fill="#9D174D"/>
+    <polygon points="80,60 105,30 130,60" fill="#9D174D"/>
+    <polygon points="140,40 170,5 200,40" fill="#9D174D"/>
+    <polygon points="210,60 235,30 260,60" fill="#9D174D"/>
+    <polygon points="270,80 295,55 320,80" fill="#9D174D"/>
+    <rect x="160" y="80" width="20" height="40" fill="#FBBF24"/>
+    <rect x="100" y="80" width="10" height="14" fill="#FBBF24"/>
+    <rect x="225" y="80" width="10" height="14" fill="#FBBF24"/>
+    <line x1="170" y1="5" x2="170" y2="-10" stroke="#9D174D" stroke-width="2"/>
+    <polygon points="170,-10 180,-7 170,-2" fill="#EC4899"/>
+  </svg>`;
+}
+
+// Butterfly cho princess background
+function butterflySVG(c1,c2,size){
+  c1=c1||'#F472B6';c2=c2||'#A78BFA';size=size||32;
+  return `<svg viewBox="0 0 50 40" width="${size}" height="${size*0.8}">
+    <ellipse cx="15" cy="15" rx="11" ry="9" fill="${c1}" opacity=".9"/>
+    <ellipse cx="35" cy="15" rx="11" ry="9" fill="${c1}" opacity=".9"/>
+    <ellipse cx="15" cy="28" rx="9" ry="7" fill="${c2}" opacity=".9"/>
+    <ellipse cx="35" cy="28" rx="9" ry="7" fill="${c2}" opacity=".9"/>
+    <circle cx="15" cy="13" r="2" fill="white"/>
+    <circle cx="35" cy="13" r="2" fill="white"/>
+    <ellipse cx="25" cy="20" rx="2" ry="14" fill="#1F2937"/>
+    <line x1="24" y1="6" x2="22" y2="2" stroke="#1F2937" stroke-width="1"/>
+    <line x1="26" y1="6" x2="28" y2="2" stroke="#1F2937" stroke-width="1"/>
+  </svg>`;
+}
+
+// Sinh background scene theo theme — gọi trong renderDashboard, renderTopics, renderResult
+function bgSceneHTML(theme){
+  let html='<div class="bg-scene">';
+  if(theme==='princess'){
+    // 8 emoji bay
+    const emojis=['✨','💖','🌸','⭐','💎','🌟'];
+    for(let i=0;i<8;i++){
+      const left=5+i*12;
+      const dur=18+Math.random()*8;
+      const delay=-Math.random()*18;
+      const size=18+Math.random()*14;
+      html+=`<span class="float-emoji" style="left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s;font-size:${size}px">${emojis[i%emojis.length]}</span>`;
+    }
+    // 5 ngôi sao twinkle
+    for(let i=0;i<5;i++){
+      const top=Math.random()*60;
+      const left=Math.random()*90+5;
+      html+=`<span class="twinkle" style="top:${top}%;left:${left}%;animation-delay:${Math.random()*2.5}s"></span>`;
+    }
+    // 3 bướm SVG bay ngang
+    html+=`<div class="floater" style="top:30%;animation-duration:25s;animation-delay:-3s">${butterflySVG('#F472B6','#A78BFA',36)}</div>`;
+    html+=`<div class="floater" style="top:55%;animation-duration:30s;animation-delay:-15s">${butterflySVG('#FB7185','#FBBF24',28)}</div>`;
+    html+=`<div class="floater" style="top:75%;animation-duration:22s;animation-delay:-8s">${butterflySVG('#EC4899','#F9A8D4',32)}</div>`;
+    // Castle silhouette dưới đáy
+    html+=`<div class="castle">${castleSVG()}</div>`;
+  } else if(theme==='blocky'){
+    // 12 pixel block rơi
+    const colors=['#FBBF24','#F472B6','#A78BFA','#34D399','#F87171','#FFFFFF'];
+    for(let i=0;i<12;i++){
+      const left=2+i*8;
+      const dur=12+Math.random()*6;
+      const delay=-Math.random()*12;
+      const size=10+Math.random()*8;
+      const c=colors[i%colors.length];
+      html+=`<span class="pixel" style="left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s;width:${size}px;height:${size}px;background:${c};box-shadow:0 0 8px ${c}"></span>`;
+    }
+    // 4 glow pulse
+    for(let i=0;i<4;i++){
+      const top=10+i*22;
+      const left=Math.random()*80+10;
+      html+=`<span class="glow" style="top:${top}%;left:${left}%;animation-delay:${Math.random()*4}s"></span>`;
+    }
+    // 2 nhân vật blocky bay ngang
+    html+=`<div class="floater" style="top:25%;animation-duration:35s;animation-delay:-10s">${blockyChar('#FBBF24','#A78BFA','#5B21B6',38)}</div>`;
+    html+=`<div class="floater" style="top:65%;animation-duration:40s;animation-delay:-20s">${blockyChar('#FED7AA','#10B981','#065F46',32)}</div>`;
+  }
+  html+='</div>';
+  return html;
+}
+
+// Đổi background body theo theme — gọi mỗi khi đổi profile
+function applyBodyTheme(themeId){
+  document.body.classList.remove('theme-princess','theme-blocky');
+  if(themeId==='princess')document.body.classList.add('theme-princess');
+  else if(themeId==='blocky')document.body.classList.add('theme-blocky');
+}
+
 // ==== Vẽ đồng hồ analog SVG ====
 // time: chuỗi "h:mm" (vd "3:30") → trả về SVG đầy đủ
 function clockSVG(time,size){
@@ -306,21 +508,27 @@ const render=()=>{
 };
 
 function renderSelect(){
+  applyBodyTheme(null); // reset background mặc định cho màn chọn
+  // Mỗi profile dùng SVG character riêng làm avatar
+  const avatarOf=(k)=>k==='vy'?princessChar('#92400E','#EC4899',64):blockyChar('#FBBF24','#3B82F6','#1E40AF',58);
   root.innerHTML=`<h1>🌈 Vui Học Cùng Bé 🌈</h1><p class="sub">Ai đang học hôm nay?</p>
     <div class="pgrid">
-      ${Object.entries(PROFILES).map(([k,p])=>{const t=THEMES[p.theme];return `<div class="pcard ${p.theme}" data-p="${k}"><span class="tg">${t.label}</span><span class="av">${t.avatar}</span><h3 class="nm">${p.name}</h3><p class="gr">Bé ${p.grade}</p></div>`}).join('')}
+      ${Object.entries(PROFILES).map(([k,p])=>{const t=THEMES[p.theme];return `<div class="pcard ${p.theme}" data-p="${k}"><span class="tg">${t.label}</span><div class="av bouncer" style="display:flex;justify-content:center;margin:4px 0">${avatarOf(k)}</div><h3 class="nm">${p.name}</h3><p class="gr">Bé ${p.grade}</p></div>`}).join('')}
     </div>
-    <p class="footer">v1.0 · Test trên iPad/iPhone — touch tối ưu, nghe được giọng en-US</p>`;
+    <p class="footer">v1.0 · Tối ưu iPad/iPhone — chạm là chơi, nghe giọng en-US</p>` + bgSceneHTML('default');
   root.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{state.profile=b.dataset.p;state.screen='dashboard';render()});
 }
 
 function renderDashboard(){
   const p=state.profile,info=PROFILES[p],t=THEMES[info.theme];
+  applyBodyTheme(t.id); // gắn class background theo theme
   const streakNow=getStreak(p).cur;
   const coins=getCoins(p);
+  // Avatar SVG to ở header
+  const avatar=p==='vy'?princessChar('#92400E','#EC4899',38):blockyChar('#FBBF24','#3B82F6','#1E40AF',32);
   root.innerHTML=`<div class="bar">
     <div class="btn gray" id="back">← Đổi</div>
-    <div class="namebar"><p class="nm">${t.avatar} ${info.name}</p><p class="gr">${info.grade} · ${t.label}</p></div>
+    <div class="namebar" style="display:flex;align-items:center;gap:8px;justify-content:center"><div class="bouncer">${avatar}</div><div><p class="nm">${info.name}</p><p class="gr">${info.grade} · ${t.label}</p></div></div>
     <div style="display:flex;gap:6px">${streakNow>0?`<span class="streak">🔥 ${streakNow}</span>`:''}<span class="coins">🪙 ${coins}</span></div>
   </div>
   <p class="sub">Chọn môn học</p>
@@ -328,7 +536,7 @@ function renderDashboard(){
     <div class="scard" data-s="math" style="background:linear-gradient(135deg,#4DC3FF,#6BE38E)"><span class="e">🧮</span><h3 class="ct">Toán</h3><p class="cd">Phép tính & hình</p></div>
     <div class="scard" data-s="english" style="background:linear-gradient(135deg,#FF6FB5,#A678FF)"><span class="e">🔤</span><h3 class="ct">Tiếng Anh</h3><p class="cd">Vocab & ngữ pháp</p></div>
     <div class="scard" data-s="vietnamese" style="background:linear-gradient(135deg,#34D399,#0D9488)"><span class="e">📖</span><h3 class="ct">Tiếng Việt</h3><p class="cd">Chính tả, đọc hiểu</p></div>
-  </div>`;
+  </div>` + bgSceneHTML(t.id);
   root.querySelector('#back').onclick=()=>{state.profile=null;state.screen='select';render()};
   root.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{state.subj=b.dataset.s;state.screen='topics';render()});
 }
