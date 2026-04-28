@@ -226,7 +226,19 @@ const TOPICS_VY={
      gen:()=>{const o=[];for(let i=0;i<5;i++){const m=rand(1,5),cm=rand(0,99),c=m*100+cm;o.push({prompt:`${m} m ${cm} cm = ? cm`,...numChoices(c,30),explanation:`${m} m = ${m*100} cm. Tổng: ${m*100} + ${cm} = ${c} cm.`})}return o}},
     {id:'g2-word',e:'📝',t:'Bài toán nhiều bước',d:'Singapore-style 2 bước',adv:true,
      ex:[{p:'Lan có 25 viên kẹo. Mẹ cho thêm 18 viên. Lan cho em 12 viên. Còn lại?',steps:['Bước 1 (cộng): 25 + 18 = 43.','Bước 2 (trừ): 43 − 12 = 31.','Đáp số: 31 viên.'],a:'31 viên'}],
-     gen:()=>{const items=['viên kẹo','quyển vở','cây bút','quả táo'];const names=['Lan','Minh','An','Mai'];const o=[];for(let i=0;i<5;i++){const item=items[rand(0,items.length-1)];const name=names[rand(0,names.length-1)];const start=rand(15,50),add=rand(8,30),give=rand(5,Math.min(20,start+add-3));const c=start+add-give;o.push({prompt:`${name} có ${start} ${item}. Bố cho thêm ${add}. ${name} cho bạn ${give}. Còn lại bao nhiêu?`,...numChoices(c,8),explanation:`Bước 1: ${start}+${add}=${start+add}. Bước 2: ${start+add}−${give}=${c} ${item}.`})}return o}}
+     gen:()=>{const items=['viên kẹo','quyển vở','cây bút','quả táo'];const names=['Lan','Minh','An','Mai'];const o=[];for(let i=0;i<5;i++){const item=items[rand(0,items.length-1)];const name=names[rand(0,names.length-1)];const start=rand(15,50),add=rand(8,30),give=rand(5,Math.min(20,start+add-3));const c=start+add-give;o.push({prompt:`${name} có ${start} ${item}. Bố cho thêm ${add}. ${name} cho bạn ${give}. Còn lại bao nhiêu?`,...numChoices(c,8),explanation:`Bước 1: ${start}+${add}=${start+add}. Bước 2: ${start+add}−${give}=${c} ${item}.`})}return o}},
+    {id:'g2-cmp',e:'⚖️',t:'So sánh số (>,<,=)',d:'Lớn hơn, bé hơn',
+     ex:[{p:'Điền dấu: 47 ___ 52',steps:['So 4 chục với 5 chục: 4 < 5.','Hàng chục bé hơn → 47 < 52.'],a:'<'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const a=rand(10,99),b=rand(10,99);const correct=a>b?'>':a<b?'<':'=';const ch=shuffle(['>','<','=']);o.push({prompt:`Điền dấu: ${a} ___ ${b}`,choices:ch,answerIndex:ch.indexOf(correct),explanation:`${a} ${correct} ${b}.`})}return o}},
+    {id:'g2-perim',e:'🔲',t:'Chu vi hình',d:'HCN và HV',
+     ex:[{p:'Hình vuông cạnh 5 cm. Chu vi = ?',steps:['Chu vi HV = cạnh × 4.','5 × 4 = 20.','Đáp số: 20 cm.'],a:'20 cm'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const isSq=Math.random()<.5;if(isSq){const s=rand(3,15),c=s*4;o.push({prompt:`Hình vuông cạnh ${s} cm. Chu vi = ? cm`,...numChoices(c,8),explanation:`Chu vi HV = ${s} × 4 = ${c} cm.`})}else{const a=rand(3,15),b=rand(3,15),c=2*(a+b);o.push({prompt:`HCN dài ${a} cm, rộng ${b} cm. Chu vi = ? cm`,...numChoices(c,10),explanation:`Chu vi HCN = (${a}+${b})×2 = ${c} cm.`})}}return o}},
+    {id:'g2-money',e:'💰',t:'Tiền Việt Nam',d:'Cộng/trừ đồng',
+     ex:[{p:'Mẹ cho 20.000đ, mua kem hết 8.000đ. Còn lại?',steps:['Phép trừ: 20.000 − 8.000 = 12.000.','Đáp số: 12.000 đồng.'],a:'12.000đ'}],
+     gen:()=>{const items=['kem','kẹo','bánh','bút','sách'];const o=[];for(let i=0;i<5;i++){const it=items[rand(0,items.length-1)];const have=rand(10,30),cost=rand(3,have-3);const c=have-cost;const ds=new Set([c]);while(ds.size<4){const d=rand(-4,4);if(c+d>0&&c+d!==c)ds.add(c+d)}const ch=shuffle([...ds]).map(x=>x+'.000đ');o.push({prompt:`Mẹ cho ${have}.000đ, mua ${it} hết ${cost}.000đ. Còn lại?`,choices:ch,answerIndex:ch.indexOf(c+'.000đ'),explanation:`${have} − ${cost} = ${c}. Còn ${c}.000đ.`})}return o}},
+    {id:'g2-time',e:'⏰',t:'Thời gian',d:'Bao lâu trôi qua?',adv:true,
+     ex:[{p:'Bắt đầu 8:00, kết thúc 9:30. Bao lâu?',steps:['Từ 8:00 đến 9:00 là 1 giờ.','Từ 9:00 đến 9:30 là 30 phút.','Tổng: 1 giờ 30 phút = 90 phút.'],a:'1 giờ 30 phút'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const h1=rand(7,10),m1=[0,15,30][rand(0,2)];const dh=rand(0,2),dm=[0,15,30,45][rand(0,3)];const totMin=dh*60+dm;if(totMin===0){i--;continue}const h2=h1+dh+Math.floor((m1+dm)/60);const m2=(m1+dm)%60;const cText=`${dh} giờ ${dm} phút`;const ds=new Set([cText]);while(ds.size<4){const x=rand(0,3),y=[0,15,30,45][rand(0,3)];const t=`${x} giờ ${y} phút`;if(t!==cText)ds.add(t)}const ch=shuffle([...ds]);o.push({prompt:`Bắt đầu ${h1}:${String(m1).padStart(2,'0')}, kết thúc ${h2}:${String(m2).padStart(2,'0')}. Bao lâu?`,choices:ch,answerIndex:ch.indexOf(cText),explanation:`Khoảng thời gian: ${cText} (= ${totMin} phút).`})}return o}}
   ],
   english:[
     {id:'g2-vc',e:'🐶',t:'Từ vựng con vật',d:'Cambridge Starters',lang:'en-US',
@@ -237,7 +249,10 @@ const TOPICS_VY={
      gen:()=>{const V=[['Mother','👩','mẹ'],['Father','👨','bố'],['Sister','👧','chị/em gái'],['Brother','👦','anh/em trai'],['Hand','✋','bàn tay'],['Foot','🦶','bàn chân'],['Eye','👁️','mắt'],['Nose','👃','mũi'],['Mouth','👄','miệng']];const p=shuffle(V);const o=[];for(let i=0;i<5;i++){const it=p[i%p.length];const d=shuffle(V.filter(v=>v[0]!==it[0])).slice(0,3);const all=shuffle([it,...d]);o.push({prompt:'Đây là gì?',emoji:it[1],choices:all.map(v=>v[0]),answerIndex:all.findIndex(v=>v[0]===it[0]),explanation:`${it[1]} là "${it[2]}", tiếng Anh "${it[0]}".`,speakLang:'en-US'})}return o}},
     {id:'g2-num',e:'🔢',t:'Số đếm 1-20',d:'one, two, three...',lang:'en-US',
      ex:[{p:'13 → tiếng Anh là gì?',steps:['Số 11-19 thường có đuôi "-teen".','"Three" + "teen" = "thirteen".','Lưu ý: đọc THIR- không phải three-.'],a:'thirteen'}],
-     gen:()=>{const N={1:'one',2:'two',3:'three',5:'five',7:'seven',10:'ten',13:'thirteen',15:'fifteen',18:'eighteen',20:'twenty'};const ks=Object.keys(N).map(Number);const o=[];for(let i=0;i<5;i++){const n=ks[rand(0,ks.length-1)];const ch=shuffle([N[n],...shuffle(ks.filter(x=>x!==n)).slice(0,3).map(x=>N[x])]);o.push({prompt:`${n} → tiếng Anh?`,choices:ch,answerIndex:ch.indexOf(N[n]),explanation:`${n} = "${N[n]}".`,speak:N[n],speakLang:'en-US'})}return o}}
+     gen:()=>{const N={1:'one',2:'two',3:'three',5:'five',7:'seven',10:'ten',13:'thirteen',15:'fifteen',18:'eighteen',20:'twenty'};const ks=Object.keys(N).map(Number);const o=[];for(let i=0;i<5;i++){const n=ks[rand(0,ks.length-1)];const ch=shuffle([N[n],...shuffle(ks.filter(x=>x!==n)).slice(0,3).map(x=>N[x])]);o.push({prompt:`${n} → tiếng Anh?`,choices:ch,answerIndex:ch.indexOf(N[n]),explanation:`${n} = "${N[n]}".`,speak:N[n],speakLang:'en-US'})}return o}},
+    {id:'g2-color',e:'🎨',t:'Colors',d:'Màu sắc tiếng Anh',lang:'en-US',
+     ex:[{p:'Đây là màu gì? 🔴',emoji:'🔴',steps:['Đây là màu đỏ.','Tiếng Anh: "Red".'],a:'Red'}],
+     gen:()=>{const V=[['Red','🔴','đỏ'],['Yellow','🟡','vàng'],['Blue','🔵','xanh dương'],['Green','🟢','xanh lá'],['Purple','🟣','tím'],['Orange','🟠','cam'],['Pink','🌸','hồng'],['Black','⚫','đen']];const p=shuffle(V);const o=[];for(let i=0;i<5;i++){const it=p[i%p.length];const d=shuffle(V.filter(v=>v[0]!==it[0])).slice(0,3);const all=shuffle([it,...d]);o.push({prompt:'Màu này tiếng Anh là gì?',emoji:it[1],choices:all.map(v=>v[0]),answerIndex:all.findIndex(v=>v[0]===it[0]),explanation:`${it[1]} = "${it[2]}", tiếng Anh "${it[0]}".`,speak:it[0],speakLang:'en-US'})}return o}}
   ],
   vietnamese:[
     {id:'vn-sp',e:'✏️',t:'Chính tả l/n, ch/tr',d:'Phụ âm đầu',adv:true,
@@ -267,6 +282,12 @@ const TOPICS_LAM={
     {id:'g4-tri',e:'🔺',t:'Diện tích tam giác',d:'(đáy × cao) ÷ 2',
      ex:[{p:'Tam giác đáy 8 cm, cao 5 cm. Diện tích?',steps:['Công thức: S = (đáy × cao) ÷ 2.','(8 × 5) ÷ 2 = 40 ÷ 2 = 20.','Đáp số: 20 cm².'],a:'20 cm²'}],
      gen:()=>{const o=[];for(let i=0;i<5;i++){const b=rand(4,16),h=rand(2,12)*2/2,c=Math.round(b*h/2);o.push({prompt:`Tam giác đáy ${b} cm, cao ${h} cm. Diện tích = ? cm²`,...numChoices(c,12),explanation:`(${b}×${h})÷2 = ${c} cm².`})}return o}},
+    {id:'g4-perim',e:'🔲',t:'Chu vi hình',d:'HCN, HV, hình tròn',
+     ex:[{p:'HCN dài 8 cm, rộng 5 cm. Chu vi?',steps:['Chu vi HCN = (dài + rộng) × 2.','(8 + 5) × 2 = 26 cm.'],a:'26 cm'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const m=rand(0,2);if(m===0){const a=rand(5,20),b=rand(5,20),c=2*(a+b);o.push({prompt:`HCN ${a}×${b} cm. Chu vi = ? cm`,...numChoices(c,10),explanation:`(${a}+${b})×2 = ${c} cm.`})}else if(m===1){const s=rand(4,16),c=s*4;o.push({prompt:`HV cạnh ${s} cm. Chu vi = ? cm`,...numChoices(c,10),explanation:`${s}×4 = ${c} cm.`})}else{const r=rand(3,10),c=Math.round(2*3.14*r*100)/100;const cs=c.toFixed(2).replace('.',',');const ds=new Set([cs]);while(ds.size<4){const d=rand(-50,50)/10;const v=+(c+d).toFixed(2);if(v>0&&v!==c)ds.add(v.toFixed(2).replace('.',','))}const ch=shuffle([...ds]);o.push({prompt:`Hình tròn bán kính ${r} cm. Chu vi = ? cm (π=3,14)`,choices:ch,answerIndex:ch.indexOf(cs),explanation:`C = 2πr = 2×3,14×${r} = ${cs} cm.`})}}return o}},
+    {id:'g4-mil',e:'🔢',t:'Hàng triệu',d:'Đọc/viết số có 7 chữ số',
+     ex:[{p:'Số "ba triệu năm trăm" viết là?',steps:['3 triệu = 3.000.000.','+ 500 = 3.000.500.'],a:'3.000.500'}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const m=rand(1,9),k=rand(0,99);const c=m*1000000+k*1000;const cs=c.toLocaleString('vi-VN');const ds=new Set([cs]);while(ds.size<4){const dm=rand(1,9),dk=rand(0,99);const v=(dm*1000000+dk*1000).toLocaleString('vi-VN');if(v!==cs)ds.add(v)}const ch=shuffle([...ds]);const words=`${m} triệu ${k>0?k+' nghìn':''}`.trim();o.push({prompt:`"${words}" viết là?`,choices:ch,answerIndex:ch.indexOf(cs),explanation:`${words} = ${cs}.`})}return o}},
     {id:'g4-div',e:'🔢',t:'Dấu hiệu chia hết',d:'Cho 2,3,5,9',adv:true,
      ex:[{p:'Số 2735 chia hết cho 5 không?',steps:['Tận cùng là 5 → có chia hết cho 5.'],a:'Có'}],
      gen:()=>{const o=[];for(let i=0;i<5;i++){const div=[2,3,5,9][rand(0,3)];const yes=Math.random()<.5;const n=yes?div*rand(20,80):div*rand(20,80)+(div<6?1:rand(1,div-1));const ch=['Có','Không'];o.push({prompt:`Số ${n} có chia hết cho ${div} không?`,choices:ch,answerIndex:ch.indexOf(yes?'Có':'Không'),explanation:`${n} ${yes?'chia hết':'không chia hết'} cho ${div}.`})}return o}},
@@ -644,6 +665,24 @@ function markDelivered(p,redemptionId){
   const i=list.findIndex(r=>r.id===redemptionId);
   if(i>=0){list[i].delivered=true;LS.set('redeemed_'+p,list)}
 }
+// Huỷ đơn quà & hoàn xu (chỉ áp dụng đơn chưa trao)
+function cancelRedemption(p,redemptionId){
+  const list=getRedeemed(p);
+  const i=list.findIndex(r=>r.id===redemptionId);
+  if(i<0||list[i].delivered)return false;
+  setCoins(p,getCoins(p)+list[i].cost);
+  list.splice(i,1);
+  LS.set('redeemed_'+p,list);
+  return true;
+}
+// Bố/mẹ tặng/trừ xu thủ công (thưởng/phạt)
+function adjustCoins(p,delta){
+  setCoins(p,Math.max(0,getCoins(p)+delta));
+}
+// PIN cho khu vực Bố/Mẹ (mặc định 1357 — đổi được trong Parent Panel)
+const PARENT_PIN_DEFAULT='1357';
+function getParentPin(){return LS.get('parent_pin',PARENT_PIN_DEFAULT)}
+function setParentPin(v){LS.set('parent_pin',v)}
 
 // ==== Phân loại cấp độ topic ====
 // basic = không có flag, advanced = có adv (không examFlag), exam = có examFlag
@@ -667,7 +706,7 @@ function countLevel(profile,level){
 const state={screen:'select',profile:null,level:'basic',subj:null,topic:null,exIndex:0,stepShown:0,questions:[],qIndex:0,score:0,picked:null,lastResult:null,newAch:[]};
 
 const render=()=>{
-  const r={select:renderSelect,level:renderLevel,dashboard:renderDashboard,topics:renderTopics,lesson:renderLesson,quiz:renderQuiz,result:renderResult,rewards:renderRewards};
+  const r={select:renderSelect,level:renderLevel,dashboard:renderDashboard,topics:renderTopics,lesson:renderLesson,quiz:renderQuiz,result:renderResult,rewards:renderRewards,parentLogin:renderParentLogin,parent:renderParent};
   (r[state.screen]||renderSelect)();
   if(state.newAch.length>0)showAchModal();
 };
@@ -707,7 +746,7 @@ function renderRewards(){
   root.innerHTML=`<div class="bar">
     <div class="btn gray" id="back">← Quay</div>
     <div class="namebar" style="display:flex;align-items:center;gap:8px;justify-content:center"><div class="bouncer">${avatar}</div><div><p class="nm">${info.name}</p><p class="gr">Cửa hàng quà</p></div></div>
-    <span></span>
+    <button class="btn gray" id="parentBtn" style="font-size:11px">🔒 Bố/Mẹ</button>
   </div>
   <div style="background:linear-gradient(135deg,#FFD93D,#FBBF24,#FF6FB5);border-radius:18px;padding:16px;text-align:center;color:white;box-shadow:0 8px 22px rgba(0,0,0,.15);margin-bottom:12px">
     <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:.6px;opacity:.95">🪙 Ví xu của bé</p>
@@ -718,6 +757,7 @@ function renderRewards(){
   ${list}
   <p style="font-size:10px;color:#9CA3AF;text-align:center;margin:14px 0 0;line-height:1.5">💡 Sau khi bé bấm "Đổi", bố/mẹ sẽ trao quà thật trong tuần. Quà chờ trao sẽ hiện ở khung vàng phía trên.</p>` + bgSceneHTML(t.id);
   root.querySelector('#back').onclick=()=>{state.screen='dashboard';render()};
+  root.querySelector('#parentBtn').onclick=()=>{state.screen='parentLogin';render()};
   root.querySelectorAll('.redeem-btn').forEach(b=>b.onclick=()=>{
     const r=REWARDS.find(x=>x.id===b.dataset.id);
     if(getCoins(p)<r.cost)return;
@@ -729,6 +769,116 @@ function renderRewards(){
   });
 }
 
+// ==== Parent Panel (PIN-protected) ====
+function renderParentLogin(){
+  applyBodyTheme(null);
+  const pin=getParentPin();
+  root.innerHTML=`<div class="bar">
+    <div class="btn gray" id="back">← Quay</div>
+    <div class="namebar"><p class="nm">🔒 Khu vực Bố/Mẹ</p><p class="gr">Nhập mã PIN để vào</p></div>
+    <span></span>
+  </div>
+  <div class="panel" style="text-align:center;padding:24px">
+    <span style="font-size:64px;display:block;margin-bottom:8px">🛡️</span>
+    <h3 style="color:#6B46C1;margin:0 0 6px">Quản lý quà thưởng</h3>
+    <p style="font-size:12px;color:#6B7280;margin:0 0 18px">Khu vực này dành cho bố/mẹ.<br>Mã PIN mặc định: <strong>1357</strong> (đổi được sau khi vào).</p>
+    <input id="pinIn" type="password" inputmode="numeric" maxlength="6" placeholder="••••" style="font-size:32px;text-align:center;letter-spacing:8px;padding:14px 20px;border:2px solid #E5E7EB;border-radius:14px;width:200px;font-family:inherit;outline:none">
+    <p id="pinErr" style="font-size:12px;color:#EF4444;margin:6px 0 14px;min-height:18px"></p>
+    <button class="btn-go" id="ok" style="margin:0">Vào →</button>
+  </div>`;
+  root.querySelector('#back').onclick=()=>{state.screen='rewards';render()};
+  const inp=root.querySelector('#pinIn');inp.focus();
+  const tryLogin=()=>{
+    if(inp.value===pin){state.screen='parent';render()}
+    else{root.querySelector('#pinErr').textContent='❌ PIN không đúng. Thử lại nhé.';inp.value='';inp.focus()}
+  };
+  root.querySelector('#ok').onclick=tryLogin;
+  inp.onkeydown=e=>{if(e.key==='Enter')tryLogin()};
+}
+
+function renderParent(){
+  applyBodyTheme(null);
+  // Render full dashboard cho bố/mẹ — gộp 2 profile
+  const profiles=['vy','lam'];
+  const profileBlock=(p)=>{
+    const info=PROFILES[p];const coins=getCoins(p);
+    const all=getRedeemed(p).slice().reverse();
+    const pending=all.filter(r=>!r.delivered);
+    const done=all.filter(r=>r.delivered);
+    const totalCorrect=getTotalCorrect(p);
+    const streak=getStreak(p);
+    const renderItem=(r,canAct)=>`<div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:10px;margin:6px 0;display:flex;gap:10px;align-items:center">
+      <span style="font-size:28px">${r.emoji}</span>
+      <div style="flex:1;min-width:0">
+        <p style="margin:0;font-size:13px;font-weight:600;color:#1F2937">${r.name}</p>
+        <p style="margin:2px 0 0;font-size:10px;color:#6B7280">📅 ${r.date} · ${r.cost} 🪙 ${r.delivered?'· ✓ Đã trao':'· ⏳ Chờ trao'}</p>
+      </div>
+      ${canAct?`<div style="display:flex;flex-direction:column;gap:4px">
+        <button class="mini-btn deliver" data-p="${p}" data-id="${r.id}" style="background:#10B981;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">✓ Đã trao</button>
+        <button class="mini-btn cancel" data-p="${p}" data-id="${r.id}" style="background:#EF4444;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">✗ Huỷ + hoàn xu</button>
+      </div>`:''}
+    </div>`;
+    const pendingHtml=pending.length?pending.map(r=>renderItem(r,true)).join(''):'<p style="font-size:12px;color:#9CA3AF;font-style:italic;margin:6px 0">Không có đơn nào chờ trao.</p>';
+    const doneHtml=done.length?done.slice(0,5).map(r=>renderItem(r,false)).join(''):'<p style="font-size:12px;color:#9CA3AF;font-style:italic;margin:6px 0">Chưa có quà nào đã trao.</p>';
+    return `<div style="background:#F9FAFB;border-radius:14px;padding:14px;margin-bottom:14px;border:2px solid ${p==='vy'?'#FF6FB5':'#3B82F6'}">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <h3 style="margin:0;color:${p==='vy'?'#BE185D':'#1E40AF'};font-weight:600;flex:1">${info.name} <span style="font-size:11px;color:#6B7280;font-weight:400">(${info.grade})</span></h3>
+        <span style="background:#FBBF24;color:white;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:600">🪙 ${coins}</span>
+      </div>
+      <div style="display:flex;gap:8px;font-size:11px;color:#6B7280;margin-bottom:10px;flex-wrap:wrap">
+        <span>✅ Đã đúng: <strong>${totalCorrect}</strong> câu</span>
+        <span>🔥 Streak: <strong>${streak.cur}</strong> ngày</span>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+        <button class="mini-btn add5" data-p="${p}" style="background:#10B981;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">+5 🪙</button>
+        <button class="mini-btn add20" data-p="${p}" style="background:#059669;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">+20 🪙</button>
+        <button class="mini-btn add50" data-p="${p}" style="background:#047857;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">+50 🪙</button>
+        <button class="mini-btn sub10" data-p="${p}" style="background:#F59E0B;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">−10 🪙</button>
+        <button class="mini-btn reset" data-p="${p}" style="background:#9CA3AF;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">↻ Reset xu</button>
+      </div>
+      <p style="margin:8px 0 4px;font-size:12px;font-weight:600;color:#92400E">⏳ Quà chờ trao (${pending.length})</p>
+      ${pendingHtml}
+      <p style="margin:12px 0 4px;font-size:12px;font-weight:600;color:#065F46">✓ Lịch sử quà đã trao (${done.length} — hiện 5 gần nhất)</p>
+      ${doneHtml}
+    </div>`;
+  };
+  root.innerHTML=`<div class="bar">
+    <div class="btn gray" id="back">← Thoát</div>
+    <div class="namebar"><p class="nm">🛡️ Quản lý — Bố/Mẹ</p><p class="gr">Tuỳ chỉnh xu, duyệt/huỷ quà</p></div>
+    <button class="btn gray" id="changePin" style="font-size:11px">🔑 Đổi PIN</button>
+  </div>
+  <div style="background:linear-gradient(135deg,#6366F1,#A78BFA);border-radius:14px;padding:12px;color:white;text-align:center;margin-bottom:14px;font-size:12px">
+    💡 Quy tắc: 1 câu đúng = 1 🪙. Bé dùng xu để đổi quà thật. Bố/mẹ duyệt khi đã trao tay.
+  </div>
+  ${profiles.map(profileBlock).join('')}
+  <div style="background:#FEF3C7;border-radius:10px;padding:10px;font-size:11px;color:#92400E;margin-top:10px">
+    ⚠️ Khi <strong>Huỷ + hoàn xu</strong>: đơn quà sẽ bị xoá và xu được trả lại ví của bé. Khi <strong>Reset xu</strong>: ví về 0 nhưng lịch sử quà giữ nguyên. Hành động không thể hoàn tác.
+  </div>`;
+  root.querySelector('#back').onclick=()=>{state.screen='select';render()};
+  root.querySelector('#changePin').onclick=()=>{
+    const oldPin=prompt('Nhập PIN hiện tại:');if(oldPin!==getParentPin()){alert('❌ PIN cũ không đúng.');return}
+    const newPin=prompt('Nhập PIN mới (4-6 chữ số):');if(!newPin||!/^\d{4,6}$/.test(newPin)){alert('❌ PIN mới phải 4-6 chữ số.');return}
+    setParentPin(newPin);alert('✅ Đã đổi PIN. Lần sau dùng PIN mới nhé.');
+  };
+  root.querySelectorAll('.deliver').forEach(b=>b.onclick=()=>{
+    if(confirm(`Đánh dấu "${b.closest('div').querySelector('p').textContent}" đã trao?`)){
+      markDelivered(b.dataset.p,b.dataset.id);render();
+    }
+  });
+  root.querySelectorAll('.cancel').forEach(b=>b.onclick=()=>{
+    if(confirm('Huỷ đơn quà này và HOÀN XU lại ví của bé?')){
+      cancelRedemption(b.dataset.p,b.dataset.id);render();
+    }
+  });
+  root.querySelectorAll('.add5').forEach(b=>b.onclick=()=>{adjustCoins(b.dataset.p,5);render()});
+  root.querySelectorAll('.add20').forEach(b=>b.onclick=()=>{adjustCoins(b.dataset.p,20);render()});
+  root.querySelectorAll('.add50').forEach(b=>b.onclick=()=>{adjustCoins(b.dataset.p,50);render()});
+  root.querySelectorAll('.sub10').forEach(b=>b.onclick=()=>{adjustCoins(b.dataset.p,-10);render()});
+  root.querySelectorAll('.reset').forEach(b=>b.onclick=()=>{
+    if(confirm(`Đặt lại ví xu của ${PROFILES[b.dataset.p].name} về 0?`)){setCoins(b.dataset.p,0);render()}
+  });
+}
+
 function renderSelect(){
   applyBodyTheme(null); // reset background mặc định cho màn chọn
   // Mỗi profile dùng SVG character riêng làm avatar
@@ -737,8 +887,10 @@ function renderSelect(){
     <div class="pgrid">
       ${Object.entries(PROFILES).map(([k,p])=>{const t=THEMES[p.theme];return `<div class="pcard ${p.theme}" data-p="${k}"><span class="tg">${t.label}</span><div class="av bouncer" style="display:flex;justify-content:center;margin:4px 0">${avatarOf(k)}</div><h3 class="nm">${p.name}</h3><p class="gr">Bé ${p.grade}</p></div>`}).join('')}
     </div>
-    <p class="footer">v1.0 · Tối ưu iPad/iPhone — chạm là chơi, nghe giọng en-US</p>` + bgSceneHTML('default');
+    <div style="text-align:center;margin-top:14px"><button id="parentEnter" style="background:rgba(255,255,255,.7);border:1px solid #E5E7EB;color:#6B7280;border-radius:99px;padding:8px 18px;font-size:12px;cursor:pointer;font-family:inherit">🔒 Khu vực Bố/Mẹ</button></div>
+    <p class="footer">v1.1 · Tối ưu iPad/iPhone — chạm là chơi, nghe giọng en-US</p>` + bgSceneHTML('default');
   root.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{state.profile=b.dataset.p;state.level='basic';state.screen='level';render()});
+  root.querySelector('#parentEnter').onclick=()=>{state.screen='parentLogin';render()};
 }
 
 function renderLevel(){
@@ -780,7 +932,6 @@ function renderDashboard(){
   const streakNow=getStreak(p).cur;
   const coins=getCoins(p);
   const avatar=p==='vy'?princessChar('#92400E','#EC4899',38):blockyChar('#FBBF24','#3B82F6','#1E40AF',32);
-  // Pill cấp độ hiện tại + nút đổi
   const lvlInfo={basic:{e:'📚',name:'Cơ bản',color:'linear-gradient(90deg,#4DC3FF,#6BE38E)'},
     advanced:{e:'🔥',name:'Nâng cao',color:'linear-gradient(90deg,#FB923C,#EF4444)'},
     exam:{e:'🏆',name:'Luyện thi CLC',color:'linear-gradient(90deg,#7C3AED,#EC4899)'}}[state.level];
@@ -806,8 +957,8 @@ function renderDashboard(){
   <p class="sub">Chọn môn học</p>
   <div class="subjs">
     <div class="scard" data-s="math" style="background:linear-gradient(135deg,#4DC3FF,#6BE38E)"><span class="e">🧮</span><h3 class="ct">Toán</h3><p class="cd">Phép tính & hình</p></div>
-    <div class="scard" data-s="english" style="background:linear-gradient(135deg,#FF6FB5,#A678FF)"><span class="e">🔤</span><h3 class="ct">Tiếng Anh</h3><p class="cd">Vocab & ngữ pháp</p></div>
-    <div class="scard" data-s="vietnamese" style="background:linear-gradient(135deg,#34D399,#0D9488)"><span class="e">📖</span><h3 class="ct">Tiếng Việt</h3><p class="cd">Chính tả, đọc hiểu</p></div>
+    <div class="scard" data-s="english" style="background:linear-gradient(135deg,#FF6FB5,#A678FF)"><span class="e">🔤</span><h3 class="ct">Tiếng Anh</h3><p class="cd">Vocabulary & Grammar</p></div>
+    <div class="scard" data-s="vietnamese" style="background:linear-gradient(135deg,#FBBF24,#F97316)"><span class="e">📖</span><h3 class="ct">Tiếng Việt</h3><p class="cd">Chính tả, đọc hiểu</p></div>
   </div>` + bgSceneHTML(t.id);
   root.querySelector('#back').onclick=()=>{state.profile=null;state.screen='select';render()};
   root.querySelector('#changeLevel').onclick=()=>{state.screen='level';render()};
@@ -817,38 +968,31 @@ function renderDashboard(){
 
 function renderTopics(){
   const p=state.profile,info=PROFILES[p],t=THEMES[info.theme];
-  const TOPICS=p==='vy'?TOPICS_VY:TOPICS_LAM;
-  const allList=TOPICS[state.subj]||[];
-  // Lọc theo cấp độ đang chọn
-  const list=allList.filter(top=>topicLevel(top)===state.level);
-  const lvlInfo={basic:{e:'📚',name:'Cơ bản',color:'#4DC3FF'},advanced:{e:'🔥',name:'Nâng cao',color:'#FB923C'},exam:{e:'🏆',name:'Luyện thi CLC',color:'#7C3AED'}}[state.level];
+  applyBodyTheme(t.id);
+  const T=p==='vy'?TOPICS_VY:TOPICS_LAM;
+  const all=T[state.subj]||[];
+  const list=all.filter(x=>topicLevel(x)===state.level);
+  const subjLabel={math:'Toán',english:'Tiếng Anh',vietnamese:'Tiếng Việt'}[state.subj];
   root.innerHTML=`<div class="bar">
     <div class="btn gray" id="back">← Quay</div>
-    <div class="namebar"><p class="nm">${t.avatar} ${info.name}</p><p class="gr">${info.grade} · ${lvlInfo.e} ${lvlInfo.name}</p></div>
+    <div class="namebar"><p class="nm">${info.name}</p><p class="gr">${subjLabel} · ${state.level==='basic'?'Cơ bản':state.level==='advanced'?'Nâng cao':'Luyện thi CLC'}</p></div>
     <span class="coins">🪙 ${getCoins(p)}</span>
   </div>
-  <div class="section-row">
-    <span class="section-tag" style="background:${lvlInfo.color}">${lvlInfo.e} ${lvlInfo.name}</span>
-    <span class="section-hint">— ${list.length} bài cho môn này</span>
-  </div>
-  ${list.length===0?`<div style="background:white;border-radius:14px;padding:24px;text-align:center;color:#6B7280;margin:14px 0"><p style="font-size:36px;margin:0 0 8px">😅</p><p style="margin:0;font-size:14px;font-weight:500">Chưa có bài <strong>${lvlInfo.name}</strong> cho môn này</p><p style="margin:8px 0 0;font-size:11px">Bấm "Đổi cấp độ" hoặc chọn môn khác nhé</p></div>`:`<div class="tgrid">
-    ${list.map(top=>`<div class="topic ${top.adv?'adv':''}" data-t="${top.id}">${top.examFlag?'<span class="badge exam">🏆 CLC HN</span>':top.adv?'<span class="badge adv">🔥 Nâng cao</span>':''}<span class="e">${top.e}</span><h4 class="t">${top.t}</h4><p class="d">${top.d}</p><p class="h">📖 Xem ví dụ rồi làm bài</p></div>`).join('')}
-  </div>`}`;
+  ${list.length===0?'<div class="panel" style="text-align:center;padding:30px"><span style="font-size:48px">🌱</span><p style="font-size:13px;color:#6B7280;margin-top:10px">Chưa có chủ đề ở cấp độ này.<br>Hãy đổi sang cấp độ khác nhé!</p></div>':`<div class="topics">${list.map(x=>`<button class="topic" data-t="${x.id}"><span class="e">${x.e}</span><div><h4>${x.t}</h4><p>${x.d}</p></div></button>`).join('')}</div>`}` + bgSceneHTML(t.id);
   root.querySelector('#back').onclick=()=>{state.subj=null;state.screen='dashboard';render()};
   root.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{const top=list.find(x=>x.id===b.dataset.t);state.topic=top;state.exIndex=0;state.stepShown=0;state.screen='lesson';render()});
 }
 
 function renderLesson(){
-  const top=state.topic;const ex=top.ex[state.exIndex];const total=ex.steps.length;
-  const visual=ex.kind==='clock'?clockSVG(ex.time,170):(ex.kind==='fraction'?fracEqVisual(ex.f1.n,ex.f1.d,ex.op,ex.f2.n,ex.f2.d,75):(ex.kind==='addsub'?addSubVisual(ex.n1,ex.op,ex.n2):(ex.emoji?`<span class="qe">${ex.emoji}</span>`:'')));
-  const stepsHtml=ex.steps.slice(0,state.stepShown).map((s,i)=>`<div class="step"><span class="n">${i+1}</span><span class="s">${s}</span></div>`).join('');
-  const allShown=state.stepShown>=total;
+  const top=state.topic;const ex=top.ex[state.exIndex||0];
+  const total=ex.steps.length;const allShown=state.stepShown>=total;
+  const stepsHtml=ex.steps.slice(0,state.stepShown).map((s,i)=>`<div class="step"><span class="sn">${i+1}</span><p>${s}</p></div>`).join('');
+  const visual=ex.kind==='clock'?clockSVG(ex.time,200):(ex.kind==='fraction'?fracEqVisual(ex.f1.n,ex.f1.d,ex.op,ex.f2.n,ex.f2.d,80):(ex.kind==='addsub'?addSubVisual(ex.n1,ex.op,ex.n2):''));
   root.innerHTML=`<div class="bar">
     <div class="btn gray" id="back">← Quay</div>
-    <div class="namebar"><p class="nm">💡 Ví dụ ${state.exIndex+1}/${top.ex.length}</p></div>
-    <span style="font-size:24px">${top.e}</span>
+    <div class="namebar"><p class="nm">${top.t}</p><p class="gr">Ví dụ mẫu</p></div>
+    <span></span>
   </div>
-  <h2 style="text-align:center">${top.t}</h2>
   <p class="sub">Cùng xem cách giải nhé! 👇</p>
   <div class="panel">${visual}<div class="qrow"><p class="qp" style="margin:0">${ex.p}</p>${top.lang?`<button class="speaker" id="spk">🔊</button>`:''}</div>${stepsHtml}${allShown?`<div style="text-align:center;margin-top:10px"><span class="answer-box">✓ Đáp số: ${ex.a}</span></div>`:''}</div>
   <div class="lesson-actions">
@@ -893,7 +1037,6 @@ function pick(i){
   render();
   setTimeout(()=>{
     if(state.qIndex===4){
-      // Finalize
       const p=state.profile;
       const newCoins=getCoins(p)+state.score;setCoins(p,newCoins);
       const newTotal=getTotalCorrect(p)+state.score;setTotalCorrect(p,newTotal);
@@ -929,6 +1072,7 @@ function renderResult(){
     <br><button class="btn-go" id="cont">Tiếp tục 🚀</button>
   </div>`;
   root.querySelector('#cont').onclick=()=>{state.topic=null;state.screen='topics';render()};
+  if(state.newAch&&state.newAch.length)setTimeout(showAchModal,500);
 }
 
 function showAchModal(){
@@ -940,7 +1084,6 @@ function showAchModal(){
   document.body.appendChild(ov);
 }
 
-// Đảm bảo voices loaded (iOS Safari)
 if('speechSynthesis' in window){window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices()}
 
 render();
