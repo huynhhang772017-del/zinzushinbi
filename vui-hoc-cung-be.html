@@ -166,6 +166,15 @@ h2{font-size:18px;font-weight:500;color:#6B46C1;margin:0}
 const root=document.getElementById('app');
 const LS={get:(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def}catch{return def}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
 
+// ==== One-time migration: ×5 xu hiện có để bù lại giá quà tăng ====
+if(!LS.get('migration_5x_v1',false)){
+  ['vy','lam'].forEach(p=>{
+    const c=LS.get('coins_'+p,0);
+    if(c>0)LS.set('coins_'+p,c*5);
+  });
+  LS.set('migration_5x_v1',true);
+}
+
 // ==== State persisted ====
 const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const getStreak=p=>LS.get('streak_'+p,{cur:0,last:''});
@@ -339,6 +348,29 @@ const TOPICS_VY={
      gen:()=>{const G=[{snd:'ai /eɪ/',words:['rain','train','snail','tail','wait']},{snd:'ee /iː/',words:['tree','bee','sleep','feet','green']},{snd:'igh /aɪ/',words:['night','light','high','right','fight']},{snd:'oa /əʊ/',words:['boat','goat','soap','road','coat']},{snd:'sh /ʃ/',words:['ship','shop','fish','shut','cash']},{snd:'th /θ/',words:['thin','bath','path','thick','three']},{snd:'ng /ŋ/',words:['sing','king','long','ring','wing']}];const o=[];for(let i=0;i<5;i++){const g=G[rand(0,G.length-1)];const correct=g.words[rand(0,g.words.length-1)];const distractors=[];const others=G.filter(x=>x.snd!==g.snd);while(distractors.length<3){const og=others[rand(0,others.length-1)];const w=og.words[rand(0,og.words.length-1)];if(!distractors.includes(w)&&w!==correct)distractors.push(w)}const ch=shuffle([correct,...distractors]);o.push({prompt:`Which word has "${g.snd}" sound?`,choices:ch,answerIndex:ch.indexOf(correct),explanation:`${correct} has ${g.snd} sound.`,speak:correct,speakLang:'en-US'})}return o}}
   ],
   vietnamese:[
+    {id:'vy-vn-sp',e:'✏️',t:'Chính tả l/n ch/tr x/s',d:'Phân biệt phụ âm dễ nhầm',
+     ex:[{p:'Điền l hay n: "…ăn cơm"',a:'ăn cơm → "ăn"',steps:['"ăn" bắt đầu bằng nguyên âm — không cần l/n','Đáp án: ăn']}],
+     gen:()=>{const W=[['l','àm bài','làm'],['n','ói chuyện','nói'],['l','àng quê','làng'],['n','ăm học','năm'],['l','úa chín','lúa'],['n','ằm ngủ','nằm'],['l','ên đường','lên'],['n','ói lời','nói'],['ch','ơi đùa','chơi'],['tr','ời mưa','trời'],['ch','ăm chỉ','chăm'],['tr','ường học','trường'],['ch','ó mèo','chó'],['tr','ăng sáng','trăng'],['ch','úc mừng','chúc'],['tr','ò chơi','trò'],['x','inh đẹp','xinh'],['s','ách vở','sách'],['x','ích đu','xích'],['s','ân chơi','sân'],['x','e đạp','xe'],['s','úc vật','súc'],['x','úc miệng','xúc'],['s','ạch sẽ','sạch']];const o=[];const sh=W.slice().sort(()=>Math.random()-.5);for(let i=0;i<5;i++){const it=sh[i];const right=it[0];const pair=right==='l'?'n':right==='n'?'l':right==='ch'?'tr':right==='tr'?'ch':right==='x'?'s':'x';const choices=Math.random()<.5?[right,pair]:[pair,right];o.push({prompt:'Điền vào chỗ trống: "…'+it[1]+'"',choices,answerIndex:choices.indexOf(right),explanation:'Đúng là "'+it[2]+'" — viết bằng "'+right+'".'})}return o}},
+    {id:'vy-vn-tu',e:'📝',t:'Từ chỉ sự vật / hoạt động',d:'Phân loại từ vựng cơ bản',
+     ex:[{p:'"chạy" là từ chỉ gì?',a:'hoạt động',steps:['"chạy" mô tả việc làm','Đáp án: hoạt động']}],
+     gen:()=>{const SV=['cái bàn','quyển vở','con mèo','cái cặp','quả cam','ngôi nhà','cây đa','con cá','viên kẹo','bông hoa','cái bút','quyển sách','con chó','cái ghế','quả táo','xe đạp','con gà','cái cốc'];const HD=['chạy','nhảy','ăn','uống','học','ngủ','chơi','viết','đọc','vẽ','hát','múa','nói','cười','khóc','đi','đứng','ngồi'];const DD=['đẹp','xấu','to','nhỏ','cao','thấp','xanh','đỏ','vàng','tròn','vuông','dài','ngắn','nhanh','chậm','nóng','lạnh','mới'];const all=[...SV.map(w=>[w,'sự vật']),...HD.map(w=>[w,'hoạt động']),...DD.map(w=>[w,'đặc điểm'])];const sh=all.sort(()=>Math.random()-.5);const o=[];for(let i=0;i<5;i++){const [w,k]=sh[i];const ch=['sự vật','hoạt động','đặc điểm'];o.push({prompt:'"'+w+'" là từ chỉ gì?',choices:ch,answerIndex:ch.indexOf(k),explanation:'"'+w+'" là từ chỉ '+k+'.'})}return o}},
+    {id:'vy-vn-cau',e:'❓',t:'Câu kể / câu hỏi',d:'Phân biệt loại câu cơ bản',
+     ex:[{p:'"Hôm nay trời đẹp." là câu gì?',a:'câu kể',steps:['Câu này thông báo điều gì đó','Cuối câu có dấu chấm','Đáp án: câu kể']}],
+     gen:()=>{const KE=['Hôm nay trời đẹp.','Bé Vy đi học.','Mẹ nấu cơm ngon.','Cá vàng bơi trong bể.','Em yêu mẹ nhất.','Trường em rất to.','Bố đọc báo.','Chú mèo ngủ trên ghế.','Hoa nở trong vườn.','Em thích ăn kem.'];const HOI=['Bạn đi đâu vậy?','Hôm nay là thứ mấy?','Mẹ ơi bao giờ ăn cơm?','Tại sao trời mưa?','Quyển sách này là của ai?','Bạn tên là gì?','Mai có đi học không?','Bố đã về chưa?','Cô giáo dạy lớp nào?','Sao em buồn thế?'];const CAM=['Ôi, đẹp quá!','Hay quá trời ơi!','Trời ơi, lạnh thế!','Ngon ơi là ngon!','Vui quá đi!'];const all=[...KE.map(s=>[s,'câu kể']),...HOI.map(s=>[s,'câu hỏi']),...CAM.map(s=>[s,'câu cảm'])];const sh=all.sort(()=>Math.random()-.5);const o=[];for(let i=0;i<5;i++){const [s,k]=sh[i];const ch=['câu kể','câu hỏi','câu cảm'];o.push({prompt:'"'+s+'" là loại câu gì?',choices:ch,answerIndex:ch.indexOf(k),explanation:'"'+s+'" là '+k+(k==='câu kể'?' (kể/thông báo, kết bằng dấu chấm)':k==='câu hỏi'?' (để hỏi, kết bằng dấu hỏi)':' (bộc lộ cảm xúc, kết bằng dấu chấm than)')+'.'})}return o}},
+    {id:'vy-vn-rh',e:'📖',t:'Đọc hiểu câu ngắn',d:'Hiểu câu chuyện đơn giản',
+     ex:[{p:'"Bé Vy có 3 quả táo. Mẹ cho bé 2 quả. Bé Vy có mấy quả?"',a:'5 quả',steps:['Bé có 3 + mẹ cho 2 = 5','Đáp án: 5 quả']}],
+     gen:()=>{const STO=[
+       {s:'Bé Lan có 4 cái kẹo. Mẹ cho bé thêm 3 cái. Hỏi bé có mấy cái?',a:'7 cái',ch:['7 cái','5 cái','6 cái','8 cái']},
+       {s:'Trong vườn có 5 cây hoa hồng và 2 cây hoa cúc. Hỏi vườn có mấy cây hoa?',a:'7 cây',ch:['7 cây','3 cây','5 cây','10 cây']},
+       {s:'Lớp 2A có 30 bạn. Hôm nay nghỉ 4 bạn. Hỏi đi học mấy bạn?',a:'26 bạn',ch:['26 bạn','24 bạn','34 bạn','25 bạn']},
+       {s:'Bố mua 6 quả táo. Cả nhà ăn hết 4 quả. Hỏi còn lại mấy quả?',a:'2 quả',ch:['2 quả','10 quả','3 quả','1 quả']},
+       {s:'Bé Vy đọc 5 trang vào buổi sáng và 3 trang vào buổi chiều. Hỏi bé đọc tổng mấy trang?',a:'8 trang',ch:['8 trang','2 trang','15 trang','7 trang']},
+       {s:'Trong rổ có 10 quả cam. Bé lấy ra 6 quả. Hỏi còn lại mấy quả?',a:'4 quả',ch:['4 quả','16 quả','6 quả','3 quả']},
+       {s:'Anh có 8 viên bi xanh và 5 viên bi đỏ. Hỏi anh có tất cả mấy viên bi?',a:'13 viên',ch:['13 viên','3 viên','15 viên','12 viên']},
+       {s:'Mèo bắt được 3 con chuột vào sáng và 2 con vào tối. Hỏi mèo bắt được mấy con?',a:'5 con',ch:['5 con','1 con','6 con','3 con']},
+       {s:'Lớp em có 35 bạn. Trong đó có 20 bạn nữ. Hỏi có mấy bạn nam?',a:'15 bạn',ch:['15 bạn','55 bạn','25 bạn','10 bạn']},
+       {s:'Bố Vy đi xe đạp 5km buổi sáng, 3km buổi chiều. Hỏi bố đạp tổng mấy km?',a:'8 km',ch:['8 km','2 km','15 km','7 km']}
+     ];const sh=STO.slice().sort(()=>Math.random()-.5);const o=[];for(let i=0;i<5;i++){const it=sh[i];const ch=it.ch.slice().sort(()=>Math.random()-.5);o.push({prompt:it.s,choices:ch,answerIndex:ch.indexOf(it.a),explanation:'Đáp án đúng: '+it.a+'.'})}return o}},
     {id:'vn-sp',e:'✏️',t:'Chính tả l/n, ch/tr',d:'Phụ âm đầu',adv:true,
      ex:[{p:'Em ___ bài tập về nhà. (làm/nàm)',steps:['"Làm" = thực hiện hành động.','Viết bằng "L".'],a:'làm'}],
      gen:()=>{const W=[{c:'làm',w:'nàm',ctx:'Em ___ bài tập về nhà.'},{c:'lúa',w:'núa',ctx:'Cánh đồng ___ chín vàng.'},{c:'trẻ',w:'chẻ',ctx:'Các em ___ rất ngoan.'},{c:'sạch',w:'xạch',ctx:'Bé giữ tay luôn ___.'},{c:'nóng',w:'lóng',ctx:'Mùa hè trời rất ___.'}];const o=[];const p=shuffle(W);for(let i=0;i<5;i++){const it=p[i%p.length];const ds=W.filter(x=>x.c!==it.c).map(x=>x.w);const ch=shuffle([it.c,it.w,...ds.slice(0,2)]);o.push({prompt:`Điền từ đúng: "${it.ctx}"`,choices:ch,answerIndex:ch.indexOf(it.c),explanation:`"${it.c}" là từ chuẩn. "${it.w}" không phải từ chuẩn tiếng Việt.`})}return o}},
@@ -429,6 +461,22 @@ const TOPICS_LAM={
     {id:'hn-move',e:'🏃',t:'Chuyển động (CLC)',d:'Gặp nhau / đuổi kịp',adv:true,examFlag:true,
      ex:[{p:'Quãng đường 60km. A đi 20km/h, B 10km/h ngược chiều. Gặp nhau lúc?',steps:['Tổng vận tốc: 20+10=30km/h.','Thời gian: 60÷30 = 2 giờ.'],a:'2 giờ'}],
      gen:()=>{const o=[];let safe=0;while(o.length<5&&safe<30){safe++;const v1=rand(10,30),v2=rand(10,30);const sum=v1+v2;const t=rand(2,5);const d=sum*t;o.push({prompt:`Quãng đường ${d}km. A đi ${v1}km/h, B ${v2}km/h ngược chiều. Gặp nhau sau mấy giờ?`,...numChoices(t,2),explanation:`Tổng V = ${sum}km/h. T = ${d}÷${sum} = ${t} giờ.`})}return o}}
+,
+    {id:'hn-ht',e:'➖',t:'Hiệu-Tỉ (CLC)',d:'Hiệu + tỉ số → tìm hai số',examFlag:true,
+     ex:[{p:'Hiệu 2 số = 18, số bé = 2/5 số lớn. Tìm 2 số.',a:'Lớn 30, bé 12',steps:['Hiệu phần = 5−2 = 3 phần','1 phần = 18÷3 = 6','Lớn = 6×5 = 30, bé = 6×2 = 12']}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const sm=Math.floor(Math.random()*4)+2,lg=sm+Math.floor(Math.random()*4)+2;const part=Math.floor(Math.random()*5)+3;const diff=(lg-sm)*part;const big=lg*part,small=sm*part;const ch=[`Lớn ${big}, bé ${small}`,`Lớn ${small}, bé ${big}`,`Lớn ${big+part}, bé ${small-part}`,`Lớn ${big-part}, bé ${small+part}`].sort(()=>Math.random()-.5);o.push({prompt:`Hiệu 2 số bằng ${diff}. Tỉ số số bé / số lớn = ${sm}/${lg}. Tìm 2 số?`,choices:ch,answerIndex:ch.indexOf(`Lớn ${big}, bé ${small}`),explanation:`Hiệu phần = ${lg}−${sm} = ${lg-sm}. 1 phần = ${diff}÷${lg-sm} = ${part}. Lớn = ${part}×${lg} = ${big}, bé = ${part}×${sm} = ${small}.`})}return o}},
+    {id:'hn-percent',e:'%',t:'Tỉ số phần trăm (CLC)',d:'Tăng/giảm/tìm số ban đầu',examFlag:true,
+     ex:[{p:'Một sản phẩm giảm 20% còn 240k. Hỏi giá ban đầu?',a:'300k',steps:['Còn 240k = 100% − 20% = 80% giá ban đầu','Giá ban đầu = 240k ÷ 80% = 240÷0.8 = 300k']}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const orig=Math.floor(Math.random()*40+10)*10;const pct=[10,15,20,25,30,40][Math.floor(Math.random()*6)];const final=Math.round(orig*(100-pct))/100;const ch=[orig+'k',final+'k',(orig+pct*5)+'k',(orig-pct*5)+'k'].sort(()=>Math.random()-.5);o.push({prompt:`Một sản phẩm sau khi giảm ${pct}% còn ${final}k. Giá ban đầu là?`,choices:ch,answerIndex:ch.indexOf(orig+'k'),explanation:`Còn ${100-pct}% giá ban đầu. Giá ban đầu = ${final} ÷ ${(100-pct)/100} = ${orig}k.`})}return o}},
+    {id:'hn-area',e:'📐',t:'Diện tích hình thang/tròn',d:'Công thức nâng cao',examFlag:true,
+     ex:[{p:'Hình thang có 2 đáy 6cm và 10cm, cao 4cm. Tính diện tích.',a:'32 cm²',steps:['DT = (a+b)×h÷2','= (6+10)×4÷2 = 16×4÷2 = 32 cm²']}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const k=Math.floor(Math.random()*3);if(k===0){const a=Math.floor(Math.random()*8)+4,b=a+Math.floor(Math.random()*5)+2,h=Math.floor(Math.random()*5)+3;const ans=Math.round((a+b)*h/2*100)/100;const ch=[ans+' cm²',(a*b)+' cm²',((a+b)*h)+' cm²',(ans*2)+' cm²'].sort(()=>Math.random()-.5);o.push({prompt:`Hình thang đáy lớn ${b}cm, đáy bé ${a}cm, cao ${h}cm. Diện tích?`,choices:ch,answerIndex:ch.indexOf(ans+' cm²'),explanation:`DT = (${a}+${b})×${h}÷2 = ${ans} cm².`});}else if(k===1){const r=Math.floor(Math.random()*5)+2;const ans=Math.round(r*r*3.14*100)/100;const ch=[ans+' cm²',(2*r*3.14)+' cm²',(r*r*4)+' cm²',(2*r*r)+' cm²'].sort(()=>Math.random()-.5);o.push({prompt:`Hình tròn bán kính ${r}cm. Diện tích (lấy π=3.14)?`,choices:ch,answerIndex:ch.indexOf(ans+' cm²'),explanation:`DT = π×r² = 3.14×${r}×${r} = ${ans} cm².`});}else{const a=Math.floor(Math.random()*7)+3,b=Math.floor(Math.random()*7)+3;const ans=a*b/2;const ch=[ans+' cm²',(a*b)+' cm²',((a+b)/2)+' cm²',(a*b*2)+' cm²'].sort(()=>Math.random()-.5);o.push({prompt:`Tam giác đáy ${a}cm, cao ${b}cm. Diện tích?`,choices:ch,answerIndex:ch.indexOf(ans+' cm²'),explanation:`DT tam giác = đáy×cao÷2 = ${a}×${b}÷2 = ${ans} cm².`});}}return o}},
+    {id:'hn-avg',e:'📊',t:'Trung bình cộng (CLC)',d:'Tìm số khi biết TB',examFlag:true,
+     ex:[{p:'TB cộng 4 số là 25. Biết 3 số đầu lần lượt là 20, 22, 28. Tìm số thứ 4?',a:'30',steps:['Tổng 4 số = 25 × 4 = 100','Số thứ 4 = 100 − (20+22+28) = 100 − 70 = 30']}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const n=Math.floor(Math.random()*3)+3;const avg=Math.floor(Math.random()*30)+15;const total=avg*n;const known=[];let sumK=0;for(let j=0;j<n-1;j++){const v=Math.floor(Math.random()*20)+avg-10;known.push(v);sumK+=v}const ans=total-sumK;const ch=[ans,ans+5,ans-5,Math.round(avg)].map(String).sort(()=>Math.random()-.5);o.push({prompt:`TB cộng ${n} số là ${avg}. Biết ${n-1} số đầu là ${known.join(', ')}. Tìm số còn lại?`,choices:ch,answerIndex:ch.indexOf(String(ans)),explanation:`Tổng = ${avg}×${n} = ${total}. Số cần tìm = ${total} − ${sumK} = ${ans}.`})}return o}},
+    {id:'hn-mix',e:'🔢',t:'Hỗn số / Thập phân (CLC)',d:'4 phép tính nâng cao',examFlag:true,
+     ex:[{p:'2½ + 1¾ = ?',a:'4¼',steps:['2½ = 5/2 = 10/4','1¾ = 7/4','10/4 + 7/4 = 17/4 = 4¼']}],
+     gen:()=>{const o=[];for(let i=0;i<5;i++){const k=Math.floor(Math.random()*2);if(k===0){const a=Math.floor(Math.random()*4)+1,b=Math.floor(Math.random()*3)+1,c=Math.floor(Math.random()*4)+1,d=Math.floor(Math.random()*3)+1;const denom=4;const aN=a*denom+b,cN=c*denom+d;const sum=aN+cN;const intP=Math.floor(sum/denom),fracP=sum%denom;const ansStr=fracP===0?String(intP):intP+' '+fracP+'/'+denom;const ch=[ansStr,intP+' '+(fracP+1)+'/'+denom,(intP+1)+' '+fracP+'/'+denom,intP+'/'+denom].sort(()=>Math.random()-.5);o.push({prompt:`Tính: ${a} ${b}/${denom} + ${c} ${d}/${denom} = ?`,choices:ch,answerIndex:ch.indexOf(ansStr),explanation:`= ${aN}/${denom} + ${cN}/${denom} = ${sum}/${denom} = ${ansStr}.`});}else{const a=Math.round(Math.random()*100+50)/10,b=Math.round(Math.random()*100+50)/10;const sum=Math.round((a+b)*10)/10;const ch=[sum,Math.round((a-b)*10)/10,Math.round((a*b)*10)/10,Math.round((a+b+1)*10)/10].map(String).sort(()=>Math.random()-.5);o.push({prompt:`Tính: ${a} + ${b} = ?`,choices:ch,answerIndex:ch.indexOf(String(sum)),explanation:`${a} + ${b} = ${sum}.`});}}return o}},
   ],
   english:[
     // === Cambridge Global English 4 — Stage 4 Vinschool ===
@@ -475,8 +523,95 @@ const TOPICS_LAM={
     {id:'hn-cloze',e:'📝',t:'Cloze test CLC HN',d:'Điền từ trong đoạn văn',adv:true,examFlag:true,lang:'en-US',
      ex:[{p:'My ___ is Anna. I am 10 years old. (name)',steps:['My ___ → name (danh từ chỉ tên).'],a:'name'}],
      gen:()=>{const Q=[{p:'My ___ is Anna. (tên)',c:'name'},{p:'I ___ to school every day. (đi)',c:'go'},{p:'She ___ in Hanoi. (sống)',c:'lives'},{p:'They ___ playing football. (đang)',c:'are'},{p:'There ___ many books on the shelf. (số nhiều)',c:'are'},{p:'I ___ a cake yesterday. (đã làm)',c:'made'},{p:'My friend is ___ than me. (cao hơn)',c:'taller'},{p:'The book is ___ the table. (trên)',c:'on'},{p:'I ___ a pet. (có)',c:'have'}];const o=[];const p=shuffle(Q);for(let i=0;i<5;i++){const it=p[i%p.length];const all=['name','go','lives','are','made','taller','on','have','goes','live','was','make'];const ch=shuffle([it.c,...shuffle(all.filter(x=>x!==it.c)).slice(0,3)]);o.push({prompt:it.p,choices:ch,answerIndex:ch.indexOf(it.c),explanation:`Answer: ${it.c}.`,speak:it.c,speakLang:'en-US'})}return o}}
+,
+    {id:'hn-read',e:'📚',t:'Reading CLC HN',d:'Đọc đoạn văn ngắn',examFlag:true,
+     ex:[{p:'"Tom is a doctor. He works at a hospital." → What does Tom do?',a:'doctor',steps:['Tom is a doctor → ngành = doctor']}],
+     gen:()=>{const P=[
+       {pa:'Mary likes to read books in the library every weekend.',q:'Where does Mary read?',a:'library',ch:['library','school','park','home']},
+       {pa:'My father is a teacher. He teaches Math at primary school.',q:'What subject does my father teach?',a:'Math',ch:['Math','English','Science','Art']},
+       {pa:'In summer, Linh often goes to the beach with her family.',q:'When does Linh go to the beach?',a:'summer',ch:['summer','winter','autumn','spring']},
+       {pa:'There are 25 students in our class. 13 are boys.',q:'How many girls are in the class?',a:'12',ch:['12','13','25','38']},
+       {pa:'Hoa wakes up at 6, has breakfast at 6:30, goes to school at 7.',q:'What time does Hoa have breakfast?',a:'6:30',ch:['6:30','6:00','7:00','5:30']},
+       {pa:'My uncle has 3 cats and 2 dogs. They are very friendly.',q:'How many pets does my uncle have?',a:'5',ch:['5','3','2','6']},
+       {pa:'Nam likes football best. He plays it every Sunday.',q:'What is Nam favourite sport?',a:'football',ch:['football','tennis','basketball','swimming']},
+       {pa:'The book is on the desk. The pen is in the box.',q:'Where is the pen?',a:'in the box',ch:['in the box','on the desk','under the chair','in the bag']},
+       {pa:'Last weekend, we visited Hoi An. It was very beautiful.',q:'When did we visit Hoi An?',a:'last weekend',ch:['last weekend','tomorrow','next week','yesterday']},
+       {pa:'Lan can speak English and Japanese fluently.',q:'How many languages can Lan speak?',a:'2',ch:['2','1','3','4']}
+     ];const sh=P.slice().sort(()=>Math.random()-.5);const o=[];for(let i=0;i<5;i++){const it=sh[i];const ch=it.ch.slice().sort(()=>Math.random()-.5);o.push({prompt:`"${it.pa}" → ${it.q}`,choices:ch,answerIndex:ch.indexOf(it.a),explanation:`Trả lời: ${it.a}.`,speak:it.pa,speakLang:'en-US'})}return o}},
+    {id:'hn-passive',e:'🔄',t:'Passive voice (CLC)',d:'Câu bị động cơ bản',examFlag:true,
+     ex:[{p:'Active: "Mary writes a letter." → Passive: ?',a:'A letter is written by Mary.',steps:['S+V+O → O+be+V3+by+S','Mary writes → A letter is written by Mary']}],
+     gen:()=>{const Q=[
+       {a:'Mary writes a letter.',p:'A letter is written by Mary.',w:['A letter writes by Mary.','A letter was written by Mary.','Mary is written a letter.']},
+       {a:'They built this house in 2020.',p:'This house was built by them in 2020.',w:['This house is built by them.','This house built by them.','They were built this house.']},
+       {a:'Tom cleans his room every day.',p:'His room is cleaned by Tom every day.',w:['His room cleaned by Tom.','His room was cleaned.','Tom is cleaned his room.']},
+       {a:'My mother makes a cake.',p:'A cake is made by my mother.',w:['A cake makes by mother.','A cake was made yesterday.','My mother is made a cake.']},
+       {a:'She invited me to the party.',p:'I was invited to the party by her.',w:['I am invited by her.','She is invited me.','I invited by her.']},
+       {a:'The students do the homework.',p:'The homework is done by the students.',w:['The homework do by students.','The homework was doing.','The students are done.']},
+       {a:'People speak English around the world.',p:'English is spoken around the world.',w:['English speaks worldwide.','English was spoken.','People is spoken English.']},
+       {a:'The teacher gave us a test.',p:'We were given a test by the teacher.',w:['A test was give by teacher.','We are given.','The teacher is gave a test.']}
+     ];const sh=Q.slice().sort(()=>Math.random()-.5);const o=[];for(let i=0;i<5;i++){const it=sh[i];const ch=[it.p,...it.w].sort(()=>Math.random()-.5);o.push({prompt:`Active: "${it.a}" → Passive form?`,choices:ch,answerIndex:ch.indexOf(it.p),explanation:`Đáp: ${it.p}`,speak:it.a,speakLang:'en-US'})}return o}},
+    {id:'hn-cond',e:'🔀',t:'If clauses (CLC)',d:'Câu điều kiện loại 0,1,2',examFlag:true,
+     ex:[{p:'"If it rains, I _____ at home." (loại 1)',a:'will stay',steps:['If clause loại 1: If + present, will + V','rains → will stay']}],
+     gen:()=>{const Q=[
+       {p:'If it rains, I _____ at home.',a:'will stay',w:['stay','stayed','would stay']},
+       {p:'If you study hard, you _____ pass the exam.',a:'will',w:['would','were','are']},
+       {p:'If I _____ a bird, I would fly.',a:'were',w:['am','was','will be']},
+       {p:'Water boils if you _____ it to 100°C.',a:'heat',w:['will heat','heated','would heat']},
+       {p:'If she _____ rich, she would travel the world.',a:'were',w:['is','will be','was']},
+       {p:'If you press this button, the door _____ open.',a:'will',w:['would','was','is']},
+       {p:'If I had a car, I _____ drive to school.',a:'would',w:['will','am','was']},
+       {p:'If the sun shines, plants _____.',a:'grow',w:['will grow','grew','would grow']},
+       {p:'If I were you, I _____ buy that.',a:'would not',w:['will not','did not','am not']},
+       {p:'If she eats too much, she _____ feel sick.',a:'will',w:['would','was','is']}
+     ];const sh=Q.slice().sort(()=>Math.random()-.5);const o=[];for(let i=0;i<5;i++){const it=sh[i];const ch=[it.a,...it.w].sort(()=>Math.random()-.5);o.push({prompt:it.p,choices:ch,answerIndex:ch.indexOf(it.a),explanation:'Đáp án: '+it.a+'.',speak:it.p.replace(/_+/,it.a),speakLang:'en-US'})}return o}},
+    {id:'hn-rep',e:'💬',t:'Reported speech (CLC)',d:'Câu tường thuật cơ bản',examFlag:true,
+     ex:[{p:'"I am tired." → He said _____',a:'he was tired',steps:['present → past trong reported speech','am → was']}],
+     gen:()=>{const Q=[
+       {q:'"I am tired." → He said _____',a:'he was tired',w:['he is tired','he were tired','he tired']},
+       {q:'"I love you." → She said _____',a:'she loved me',w:['she love me','she loves me','I love her']},
+       {q:'"We are working." → They said _____',a:'they were working',w:['they are working','they work','they will working']},
+       {q:'"I will come." → He said _____',a:'he would come',w:['he will come','he comes','he came']},
+       {q:'"I have eaten." → She said _____',a:'she had eaten',w:['she has eaten','she eat','she ate']},
+       {q:'"I can swim." → He said _____',a:'he could swim',w:['he can swim','he swam','he swims']},
+       {q:'"I saw him yesterday." → She said _____',a:'she had seen him the day before',w:['she sees him','she saw him','she had seen him yesterday']},
+       {q:'"I am happy." → Tom said _____',a:'he was happy',w:['he is happy','he happy','he were happy']},
+       {q:'"We do not know." → They said _____',a:'they did not know',w:['they do not know','they know','they not know']},
+       {q:'"I bought a car." → John said _____',a:'he had bought a car',w:['he buys a car','he bought a car','he buy a car']}
+     ];const sh=Q.slice().sort(()=>Math.random()-.5);const o=[];for(let i=0;i<5;i++){const it=sh[i];const ch=[it.a,...it.w].sort(()=>Math.random()-.5);o.push({prompt:it.q,choices:ch,answerIndex:ch.indexOf(it.a),explanation:'Đáp án: '+it.a})}return o}},
+    {id:'hn-syn',e:'🔁',t:'Synonyms / Opposites (CLC)',d:'Mở rộng vocab',examFlag:true,
+     ex:[{p:'Synonym of "happy"?',a:'glad',steps:['happy = vui, glad cũng nghĩa vui']}],
+     gen:()=>{const PAIRS=[
+       ['happy','glad','sad','angry','tired'],['big','large','small','tiny','tall'],['fast','quick','slow','lazy','rapid'],['begin','start','end','finish','close'],['easy','simple','hard','tough','difficult'],
+       ['beautiful','pretty','ugly','plain','dark'],['strong','powerful','weak','soft','tiny'],['smart','clever','dumb','silly','foolish'],['brave','bold','timid','scared','shy'],['quiet','silent','loud','noisy','wild']
+     ];const ANT=[
+       ['hot','cold','cool','warm','icy'],['rich','poor','wealthy','broke','plain'],['high','low','tall','short','small'],['young','old','new','aged','mature'],['day','night','morning','noon','evening'],
+       ['empty','full','vacant','open','wide'],['light','heavy','soft','hard','dark'],['near','far','close','distant','remote']
+     ];const o=[];const isSyn=Math.random()<.5;const list=isSyn?PAIRS:ANT;const sh=list.slice().sort(()=>Math.random()-.5);for(let i=0;i<5;i++){const it=sh[i%sh.length];const ch=[it[1],it[2],it[3],it[4]].sort(()=>Math.random()-.5);o.push({prompt:`${isSyn?'Synonym':'Opposite'} of "${it[0]}"?`,choices:ch,answerIndex:ch.indexOf(it[1]),explanation:`"${it[1]}" ${isSyn?'≈':'≠'} "${it[0]}".`})}return o}},
   ],
   vietnamese:[
+    {id:'lam-vn-tg',e:'🔗',t:'Từ ghép / từ láy',d:'Phân biệt 2 loại từ phức',
+     ex:[{p:'"chăm chỉ" là từ gì?',a:'từ láy',steps:['Cả 2 tiếng "chăm" và "chỉ" đều có âm "ch"','Lặp âm đầu = từ láy']}],
+     gen:()=>{const TG=['nhà cửa','sách vở','quần áo','bàn ghế','xe đạp','sân trường','bố mẹ','anh em','học sinh','giáo viên','con người','trái tim','đèn điện','cây cối','đường phố','bạn bè','thầy cô','sông núi','non nước','đất trời'];const TL=['lung linh','xanh xanh','đo đỏ','vàng vàng','tròn trĩnh','xinh xắn','chăm chỉ','lao xao','rì rào','thì thầm','rộng rãi','sạch sẽ','nho nhỏ','thấp thoáng','lấp lánh','mênh mông','bao la','rủ rỉ','vội vàng','xa xôi'];const all=[...TG.map(w=>[w,'từ ghép']),...TL.map(w=>[w,'từ láy'])];const sh=all.sort(()=>Math.random()-.5);const o=[];for(let i=0;i<5;i++){const [w,k]=sh[i];const ch=['từ ghép','từ láy'];o.push({prompt:'"'+w+'" thuộc loại từ nào?',choices:ch,answerIndex:ch.indexOf(k),explanation:'"'+w+'" là '+k+(k==='từ láy'?' (lặp âm/vần)':' (ghép 2 tiếng có nghĩa)')+'.'})}return o}},
+    {id:'lam-vn-tl',e:'🏷️',t:'Danh từ / động từ / tính từ',d:'Phân loại từ loại',
+     ex:[{p:'"chạy" là từ loại gì?',a:'động từ',steps:['"chạy" là hành động','Đáp án: động từ']}],
+     gen:()=>{const DT=['quyển sách','con mèo','bàn học','cô giáo','học sinh','quê hương','bầu trời','đất nước','dòng sông','cánh đồng','lá cây','con đường','ngôi trường','mái nhà','tiếng cười','niềm vui','nỗi buồn','tình yêu','lòng dũng cảm','sự thật'];const dT=['chạy','nhảy','học','viết','đọc','nghĩ','yêu','ghét','mơ','tin','hiểu','biết','nói','nghe','cười','khóc','quan sát','suy nghĩ','quyết định','phấn đấu'];const TT=['xanh tươi','rực rỡ','dũng cảm','khôn ngoan','chăm chỉ','siêng năng','thông minh','hiền lành','vui vẻ','buồn bã','rộng rãi','chật hẹp','cao lớn','nhỏ bé','sạch sẽ','dơ bẩn','êm dịu','khắc nghiệt','tươi mát','ấm áp'];const all=[...DT.map(w=>[w,'danh từ']),...dT.map(w=>[w,'động từ']),...TT.map(w=>[w,'tính từ'])];const sh=all.sort(()=>Math.random()-.5);const o=[];for(let i=0;i<5;i++){const [w,k]=sh[i];const ch=['danh từ','động từ','tính từ'];o.push({prompt:'"'+w+'" thuộc từ loại nào?',choices:ch,answerIndex:ch.indexOf(k),explanation:'"'+w+'" là '+k+'.'})}return o}},
+    {id:'lam-vn-syn',e:'🔄',t:'Từ đồng nghĩa / trái nghĩa',d:'Mở rộng vốn từ',
+     ex:[{p:'Từ đồng nghĩa với "siêng năng" là?',a:'chăm chỉ',steps:['siêng năng = làm việc nhiều','chăm chỉ = ý nghĩa tương tự']}],
+     gen:()=>{const SYN=[['chăm chỉ','siêng năng','lười biếng','bận rộn'],['hạnh phúc','vui vẻ','buồn bã','tức giận'],['to lớn','khổng lồ','bé nhỏ','vừa phải'],['nhanh nhẹn','lanh lợi','chậm chạp','vụng về'],['xinh đẹp','xinh xắn','xấu xí','bình thường'],['thông minh','khôn ngoan','ngu ngốc','hiền lành'],['dũng cảm','can đảm','hèn nhát','sợ hãi'],['hiền lành','hiền hậu','dữ tợn','nóng tính'],['rộng rãi','bao la','chật hẹp','nhỏ bé'],['sạch sẽ','tinh khiết','dơ bẩn','bụi bặm']];const ANT=[['cao','thấp','to','nhỏ'],['nóng','lạnh','ấm','mát'],['sáng','tối','rộng','hẹp'],['mạnh','yếu','khoẻ','ốm'],['vui','buồn','cười','khóc'],['mới','cũ','tốt','đẹp'],['nhanh','chậm','nhanh nhẹn','vội'],['no','đói','khát','mệt'],['thật','giả','đúng','sai'],['đầy','vơi','tràn','cạn']];const sh=Math.random()<.5?SYN.slice().sort(()=>Math.random()-.5):ANT.slice().sort(()=>Math.random()-.5);const isSyn=sh===SYN||SYN.indexOf(sh[0])>-1;const o=[];for(let i=0;i<5;i++){const it=sh[i%sh.length];const ch=it.slice(1).slice().sort(()=>Math.random()-.5);const ans=isSyn?it[1]:it[1];const right=isSyn?it[1]:it[1];o.push({prompt:'Từ '+(isSyn?'đồng nghĩa':'trái nghĩa')+' với "'+it[0]+'" là?',choices:ch.includes(right)?ch:[right,...ch.slice(0,2)],answerIndex:(ch.includes(right)?ch:[right,...ch.slice(0,2)]).indexOf(right),explanation:'"'+right+'" '+(isSyn?'đồng nghĩa':'trái nghĩa')+' với "'+it[0]+'".'})}return o}},
+    {id:'lam-vn-rh',e:'📖',t:'Đọc hiểu đoạn văn',d:'Trả lời câu hỏi từ đoạn văn',
+     ex:[{p:'Đoạn: "Mỗi sáng, gà trống gáy ò ó o, đánh thức cả xóm dậy."  Hỏi: Gà trống làm gì?',a:'gáy ò ó o',steps:['Đọc kỹ đoạn văn','Câu hỏi hỏi gà làm gì → tìm hành động','Đáp án: gáy ò ó o']}],
+     gen:()=>{const PASS=[
+       {p:'Đoạn: "Bạn Lan chăm chỉ học tập. Hằng ngày Lan đến lớp đúng giờ và làm bài đầy đủ." Hỏi: Lan có tính cách gì?',a:'chăm chỉ',ch:['chăm chỉ','lười biếng','bướng bỉnh','vui vẻ']},
+       {p:'Đoạn: "Mùa thu, lá vàng rơi đầy sân. Trời cao và xanh, gió nhẹ thổi mát lành." Hỏi: Đoạn văn tả mùa nào?',a:'mùa thu',ch:['mùa thu','mùa hè','mùa đông','mùa xuân']},
+       {p:'Đoạn: "Buổi sáng, mẹ chuẩn bị bữa sáng cho cả nhà. Mẹ nấu cháo nóng, pha sữa cho em." Hỏi: Mẹ làm gì cho em?',a:'pha sữa',ch:['pha sữa','nấu cháo','dọn dẹp','đi chợ']},
+       {p:'Đoạn: "Trên sân trường, các bạn vui chơi sau giờ học. Có bạn đá cầu, có bạn nhảy dây." Hỏi: Đoạn này nói về điều gì?',a:'các bạn chơi sau giờ học',ch:['các bạn chơi sau giờ học','giờ học môn Toán','giờ ăn trưa','tiết sinh hoạt']},
+       {p:'Đoạn: "Cây bàng già đứng giữa sân trường. Mùa hè, tán lá rộng che mát cho học sinh." Hỏi: Cây gì được nhắc đến?',a:'cây bàng',ch:['cây bàng','cây phượng','cây xoài','cây dừa']},
+       {p:'Đoạn: "Bố Lâm là bác sĩ. Bố làm việc ở bệnh viện, chữa bệnh cho mọi người." Hỏi: Bố Lâm làm nghề gì?',a:'bác sĩ',ch:['bác sĩ','giáo viên','kỹ sư','công an']},
+       {p:'Đoạn: "Ở quê em có dòng sông Hồng chảy qua. Sông rộng và phù sa đỏ ngầu." Hỏi: Sông ở quê em là sông gì?',a:'sông Hồng',ch:['sông Hồng','sông Cửu Long','sông Đà','sông Lam']},
+       {p:'Đoạn: "Hôm nay là sinh nhật bé Mai. Mẹ chuẩn bị bánh kem và hoa hồng. Bé rất vui." Hỏi: Bé Mai có cảm xúc gì?',a:'vui',ch:['vui','buồn','tức giận','sợ hãi']},
+       {p:'Đoạn: "Lan và Hoa cùng nhau đi học mỗi sáng. Hai bạn đi bộ qua công viên rồi đến trường." Hỏi: Hai bạn đến trường bằng cách nào?',a:'đi bộ',ch:['đi bộ','xe đạp','xe máy','xe buýt']},
+       {p:'Đoạn: "Tết đến, cả nhà về quê thăm ông bà. Em được nhận lì xì và ăn nhiều món ngon." Hỏi: Vào dịp gì cả nhà về quê?',a:'Tết',ch:['Tết','Trung Thu','Quốc Khánh','sinh nhật']}
+     ];const sh=PASS.slice().sort(()=>Math.random()-.5);const o=[];for(let i=0;i<5;i++){const it=sh[i];const ch=it.ch.slice().sort(()=>Math.random()-.5);o.push({prompt:it.p,choices:ch,answerIndex:ch.indexOf(it.a),explanation:'Đáp án: '+it.a})}return o}},
     {id:'vn-sp',e:'✏️',t:'Chính tả',d:'l/n, ch/tr',adv:true,
      ex:[{p:'Em ___ bài tập. (làm/nàm)',steps:['"Làm" viết bằng L.'],a:'làm'}],
      gen:()=>{const W=[{c:'làm',w:'nàm',ctx:'Em ___ bài tập về nhà.'},{c:'trẻ',w:'chẻ',ctx:'Các em ___ rất ngoan.'},{c:'sạch',w:'xạch',ctx:'Bé giữ tay luôn ___.'},{c:'nóng',w:'lóng',ctx:'Mùa hè trời rất ___.'},{c:'sữa',w:'sửa',ctx:'Bé uống một ly ___.'}];const o=[];const p=shuffle(W);for(let i=0;i<5;i++){const it=p[i%p.length];const ds=W.filter(x=>x.c!==it.c).map(x=>x.w);const ch=shuffle([it.c,it.w,...ds.slice(0,2)]);o.push({prompt:`Điền từ đúng: "${it.ctx}"`,choices:ch,answerIndex:ch.indexOf(it.c),explanation:`"${it.c}" là từ chuẩn.`})}return o}},
@@ -486,6 +621,63 @@ const TOPICS_LAM={
     {id:'g4-syn',e:'🔄',t:'Đồng nghĩa / Trái nghĩa',d:'Tìm từ cùng/trái nghĩa',adv:true,
      ex:[{p:'Từ ĐỒNG NGHĨA với "chăm chỉ" là gì?',steps:['"Chăm chỉ" = làm việc đều đặn, không lười.','Tìm từ cùng nghĩa: "siêng năng".','"Thông minh" là tính cách khác.'],a:'siêng năng'}],
      gen:()=>{const W=[{w:'chăm chỉ',syn:'siêng năng',ant:'lười biếng',sOpt:['siêng năng','thông minh','khỏe mạnh','vui vẻ'],aOpt:['lười biếng','nhanh nhẹn','cao lớn','thân thiện']},{w:'to lớn',syn:'khổng lồ',ant:'bé nhỏ',sOpt:['khổng lồ','mềm mại','nhanh chóng','sạch sẽ'],aOpt:['bé nhỏ','nặng nề','xanh xao','vui vẻ']},{w:'vui vẻ',syn:'sung sướng',ant:'buồn bã',sOpt:['sung sướng','cao lớn','nhanh nhẹn','sạch sẽ'],aOpt:['buồn bã','thông minh','khỏe mạnh','mềm mại']},{w:'nhanh',syn:'mau lẹ',ant:'chậm',sOpt:['mau lẹ','thông minh','cao','mạnh'],aOpt:['chậm','sạch','đẹp','vui']},{w:'đẹp',syn:'xinh xắn',ant:'xấu',sOpt:['xinh xắn','lớn','nhanh','mạnh'],aOpt:['xấu','cao','nhanh','mới']}];const o=[];const p=shuffle(W);for(let i=0;i<5;i++){const it=p[i%p.length];const askSyn=Math.random()<.5;const correct=askSyn?it.syn:it.ant;const ch=shuffle(askSyn?it.sOpt:it.aOpt);o.push({prompt:`Từ ${askSyn?'ĐỒNG NGHĨA':'TRÁI NGHĨA'} với "${it.w}" là gì?`,choices:ch,answerIndex:ch.indexOf(correct),explanation:askSyn?`"${it.w}" và "${it.syn}" cùng nghĩa.`:`"${it.w}" và "${it.ant}" trái nghĩa.`})}return o}}
+,
+    {id:'hn-vn-rh',e:'📜',t:'Đọc hiểu nâng cao (CLC)',d:'Suy luận, ý nghĩa câu',examFlag:true,
+     ex:[{p:'"Cánh đồng lúa chín vàng như tấm thảm." Câu này dùng phép?',a:'so sánh',steps:['"như tấm thảm" là so sánh','Phép so sánh']}],
+     gen:()=>{const P=[
+       {pa:'"Mặt trời như quả cầu lửa." Câu này dùng phép gì?',a:'so sánh',ch:['so sánh','nhân hóa','ẩn dụ','liệt kê']},
+       {pa:'"Ông trời mặc áo giáp đen." Câu này dùng phép gì?',a:'nhân hóa',ch:['nhân hóa','so sánh','ẩn dụ','điệp ngữ']},
+       {pa:'"Mẹ là biển cả bao la." Câu này dùng phép gì?',a:'ẩn dụ',ch:['ẩn dụ','so sánh','nhân hóa','liệt kê']},
+       {pa:'Câu "Trên đường về thấy gió mây bay." gợi cảm xúc gì?',a:'thanh bình',ch:['thanh bình','tức giận','sợ hãi','buồn bã']},
+       {pa:'"Bác Hồ là cha già của dân tộc." Phép tu từ là?',a:'ẩn dụ',ch:['ẩn dụ','so sánh','nhân hóa','điệp ngữ']},
+       {pa:'"Sông Hương dài như dải lụa." Phép gì?',a:'so sánh',ch:['so sánh','ẩn dụ','nhân hóa','liệt kê']},
+       {pa:'"Cây bàng già đứng nghiêng nghiêng giữa sân trường." Phép gì?',a:'nhân hóa',ch:['nhân hóa','so sánh','ẩn dụ','điệp ngữ']},
+       {pa:'"Trẻ em như búp trên cành." Câu này có ý gì?',a:'trẻ em ngây thơ, đáng quý',ch:['trẻ em ngây thơ, đáng quý','trẻ em hư','búp non','cành cây']},
+       {pa:'Câu nào dùng nhân hóa: 1) Mưa rơi 2) Mưa khóc thầm 3) Trời mưa to',a:'2) Mưa khóc thầm',ch:['2) Mưa khóc thầm','1) Mưa rơi','3) Trời mưa to','Cả 3 câu']},
+       {pa:'"Trắng như tuyết." là phép?',a:'so sánh',ch:['so sánh','ẩn dụ','nhân hóa','liệt kê']}
+     ];const sh=P.slice().sort(()=>Math.random()-.5);const o=[];for(let i=0;i<5;i++){const it=sh[i];const ch=it.ch.slice().sort(()=>Math.random()-.5);o.push({prompt:it.pa,choices:ch,answerIndex:ch.indexOf(it.a),explanation:'Đáp án: '+it.a})}return o}},
+    {id:'hn-vn-th',e:'🌟',t:'Thành ngữ - Tục ngữ (CLC)',d:'Hiểu nghĩa câu nói',examFlag:true,
+     ex:[{p:'"Có công mài sắt có ngày nên kim" nghĩa là?',a:'kiên trì sẽ thành công',steps:['Mài sắt thành kim mất rất lâu','Khuyên kiên trì']}],
+     gen:()=>{const P=[
+       {q:'"Có công mài sắt có ngày nên kim" nghĩa là?',a:'kiên trì sẽ thành công',ch:['kiên trì sẽ thành công','phải làm việc nhanh','tiền là quan trọng','sắt mới quý']},
+       {q:'"Học thầy không tày học bạn" nghĩa là?',a:'học bạn đôi khi tốt hơn học thầy',ch:['học bạn đôi khi tốt hơn học thầy','phải kính trọng thầy','bạn bè không quan trọng','học một mình']},
+       {q:'"Đi một ngày đàng học một sàng khôn" nghĩa là?',a:'đi nhiều thì hiểu biết nhiều',ch:['đi nhiều thì hiểu biết nhiều','đi xa nguy hiểm','phải mang sàng đi','học ở trường']},
+       {q:'"Tốt gỗ hơn tốt nước sơn" nghĩa là?',a:'phẩm chất bên trong quan trọng hơn vẻ ngoài',ch:['phẩm chất bên trong quan trọng hơn vẻ ngoài','sơn không tốt','gỗ đắt','sơn rẻ']},
+       {q:'"Thua keo này bày keo khác" nghĩa là?',a:'thất bại không nản, thử lại',ch:['thất bại không nản, thử lại','phải dán keo','tìm keo mới','dán hai lớp']},
+       {q:'"Lá lành đùm lá rách" nghĩa là?',a:'người khá giúp người khó khăn',ch:['người khá giúp người khó khăn','lá to bọc lá nhỏ','phải gói cẩn thận','che lá rách']},
+       {q:'"Một cây làm chẳng nên non, ba cây chụm lại nên hòn núi cao" là nói về?',a:'đoàn kết',ch:['đoàn kết','trồng cây','phá rừng','xây dựng']},
+       {q:'"Học, học nữa, học mãi" của ai?',a:'V.I. Lenin',ch:['V.I. Lenin','Hồ Chí Minh','Khổng Tử','Nguyễn Trãi']},
+       {q:'"Ăn quả nhớ kẻ trồng cây" nghĩa là?',a:'biết ơn người đi trước',ch:['biết ơn người đi trước','phải ăn nhiều quả','cây quan trọng','ăn rồi quên']},
+       {q:'"Gần mực thì đen, gần đèn thì sáng" nghĩa là?',a:'môi trường ảnh hưởng đến con người',ch:['môi trường ảnh hưởng đến con người','mực thì đen','đèn thì sáng','tránh xa mực']}
+     ];const sh=P.slice().sort(()=>Math.random()-.5);const o=[];for(let i=0;i<5;i++){const it=sh[i];const ch=it.ch.slice().sort(()=>Math.random()-.5);o.push({prompt:it.q,choices:ch,answerIndex:ch.indexOf(it.a),explanation:'Đáp án: '+it.a})}return o}},
+    {id:'hn-vn-ct',e:'✏️',t:'Chính tả khó (CLC)',d:'Dấu hỏi/ngã, các thanh khó',examFlag:true,
+     ex:[{p:'"Cô ___ đẹp" — viết "tủi" hay "tủy"?',a:'cô tủi (không có)',steps:['"tủi thân" có ý buồn','Câu này không hợp']}],
+     gen:()=>{const W=[
+       {c:'sạch sẽ',w:'sạch sẹ',ctx:'Bàn ghế phải ___'},{c:'mãi mãi',w:'mải mải',ctx:'Tình bạn ___ không phai'},{c:'sửa chữa',w:'sữa chữa',ctx:'Bố đang ___ xe'},{c:'chỉnh sửa',w:'chĩnh sửa',ctx:'Cô giáo ___ bài cho em'},{c:'mỗi ngày',w:'mội ngày',ctx:'___ em đều học bài'},
+       {c:'ngẫm nghĩ',w:'ngẫm ngĩ',ctx:'Em ___ về câu chuyện'},{c:'sẵn sàng',w:'sẳn sàng',ctx:'Em đã ___ đi học'},{c:'kẻ ô',w:'kẽ ô',ctx:'Học sinh ___ trong vở'},{c:'kĩ năng',w:'kỉ năng',ctx:'Học các ___ sống'},{c:'lễ phép',w:'lể phép',ctx:'Bé rất ___'},
+       {c:'lãng mạn',w:'lảng mạn',ctx:'Câu chuyện ___ '},{c:'khẳng khiu',w:'khẳn khiu',ctx:'Cây ___ trước gió'},{c:'thãi mãn',w:'thoãi mãn',ctx:'Cảm thấy ___ với cuộc sống'},{c:'gãy gọn',w:'gảy gọn',ctx:'Trình bày ___ '},{c:'rảnh rỗi',w:'rãnh rỗi',ctx:'Khi nào em ___ ?'}
+     ];const sh=W.slice().sort(()=>Math.random()-.5);const o=[];for(let i=0;i<5;i++){const it=sh[i];const ch=[it.c,it.w].sort(()=>Math.random()-.5);o.push({prompt:`Điền chính xác: "${it.ctx}"`,choices:ch,answerIndex:ch.indexOf(it.c),explanation:`Đúng: "${it.c}" — viết với "${it.c.match(/[^\s]+/)[0]}".`})}return o}},
+    {id:'hn-vn-tr',e:'🎭',t:'Phép tu từ (CLC)',d:'So sánh, nhân hóa, ẩn dụ',examFlag:true,
+     ex:[{p:'"Cô giáo như mẹ hiền." là phép?',a:'so sánh',steps:['"như" → từ ngữ so sánh','Phép so sánh']}],
+     gen:()=>{const P=[
+       ['so sánh','Mặt trời đỏ như quả cầu lửa.'],['so sánh','Sông Hương dài như dải lụa xanh.'],['so sánh','Cô giáo hiền như cô tiên.'],['so sánh','Tóc bà bạc trắng như mây.'],['so sánh','Trẻ em như búp trên cành.'],
+       ['nhân hóa','Ông Mặt Trời thức dậy thật sớm.'],['nhân hóa','Cây bàng già đứng nghiêng nghiêng.'],['nhân hóa','Sông quê em đang ngủ say.'],['nhân hóa','Tre dũng cảm chống bão táp.'],['nhân hóa','Mưa rì rào trò chuyện với cây.'],
+       ['ẩn dụ','Mẹ là biển cả bao la.'],['ẩn dụ','Tổ quốc là mẹ hiền.'],['ẩn dụ','Bác Hồ là cha già dân tộc.'],['ẩn dụ','Trường là ngôi nhà thứ hai.'],['ẩn dụ','Sách là kho báu vô tận.']
+     ];const sh=P.slice().sort(()=>Math.random()-.5);const o=[];for(let i=0;i<5;i++){const [k,s]=sh[i];const ch=['so sánh','nhân hóa','ẩn dụ','liệt kê'];o.push({prompt:`Câu "${s}" dùng phép tu từ nào?`,choices:ch,answerIndex:ch.indexOf(k),explanation:`Câu này là phép ${k}.`})}return o}},
+    {id:'hn-vn-cau',e:'🔗',t:'Câu ghép (CLC)',d:'Câu đơn / câu ghép',examFlag:true,
+     ex:[{p:'"Trời mưa và em ở nhà." là câu?',a:'câu ghép',steps:['Có 2 mệnh đề: "Trời mưa" và "em ở nhà"','Nối bằng "và" → câu ghép']}],
+     gen:()=>{const P=[
+       {s:'Trời mưa và em ở nhà.',a:'câu ghép'},{s:'Em ăn cơm.',a:'câu đơn'},{s:'Vì trời mưa nên em không đi chơi.',a:'câu ghép'},{s:'Bé Lan rất ngoan.',a:'câu đơn'},
+       {s:'Mặc dù mệt nhưng em vẫn cố gắng học.',a:'câu ghép'},{s:'Hoa nở.',a:'câu đơn'},{s:'Nếu em chăm thì em sẽ giỏi.',a:'câu ghép'},{s:'Bố đi làm.',a:'câu đơn'},
+       {s:'Tuy nhà nghèo nhưng Lan học rất giỏi.',a:'câu ghép'},{s:'Cô giáo dạy bài.',a:'câu đơn'},{s:'Em đọc sách còn anh xem TV.',a:'câu ghép'},{s:'Trẻ em cười.',a:'câu đơn'}
+     ];const sh=P.slice().sort(()=>Math.random()-.5);const o=[];for(let i=0;i<5;i++){const it=sh[i];const ch=['câu đơn','câu ghép'];o.push({prompt:`Câu "${it.s}" thuộc loại?`,choices:ch,answerIndex:ch.indexOf(it.a),explanation:'Đây là '+it.a+(it.a==='câu ghép'?' (≥2 mệnh đề, có liên từ và/nhưng/vì/nếu/nên).':' (1 mệnh đề duy nhất).')})}return o}},
+    {id:'hn-vn-han',e:'📖',t:'Từ Hán-Việt (CLC)',d:'Hiểu nghĩa từ gốc Hán',examFlag:true,
+     ex:[{p:'"Phụ nữ" nghĩa là?',a:'người đàn bà',steps:['Phụ = đàn bà, nữ = nữ giới','Phụ nữ = người đàn bà']}],
+     gen:()=>{const P=[
+       ['phụ nữ','người đàn bà'],['nhi đồng','trẻ em'],['phụ huynh','cha mẹ'],['hiệu trưởng','người đứng đầu trường'],['giáo viên','thầy cô dạy học'],
+       ['học sinh','người đi học'],['nhân dân','người dân'],['quốc gia','đất nước'],['gia đình','nhà'],['bằng hữu','bạn bè'],
+       ['hòa bình','không có chiến tranh'],['hạnh phúc','niềm vui'],['nhân ái','yêu thương con người'],['kiên trì','bền bỉ'],['anh hùng','người dũng cảm']
+     ];const sh=P.slice().sort(()=>Math.random()-.5);const o=[];for(let i=0;i<5;i++){const [w,m]=sh[i];const ch=[m,P[(P.indexOf([w,m])+1)%P.length][1]||'người lớn',P[(P.indexOf([w,m])+2)%P.length][1]||'em bé','không biết'];const uniqueCh=[...new Set([m,...P.filter(x=>x[0]!==w).map(x=>x[1]).slice(0,3)])].slice(0,4).sort(()=>Math.random()-.5);o.push({prompt:`Từ "${w}" nghĩa là gì?`,choices:uniqueCh,answerIndex:uniqueCh.indexOf(m),explanation:`"${w}" = ${m}.`})}return o}},
   ]
 };
 
@@ -857,77 +1049,77 @@ function clockSVG(time,size){
 const REWARDS=[
   // ============ PHƯƠNG VY — 30 phần thưởng (theme công chúa) ============
   // Tier 1 — Hằng ngày (50–250 xu)
-  {id:'v01',e:'🌸',name:'Sticker công chúa',cost:50,desc:'1 tờ sticker công chúa ánh kim',for:'vy'},
-  {id:'v02',e:'📺',name:'Xem 1 tập hoạt hình',cost:80,desc:'Cùng bố/mẹ xem 1 tập Disney',for:'vy'},
-  {id:'v03',e:'🍦',name:'Một cây kem',cost:100,desc:'Que kem yêu thích sau bữa tối',for:'vy'},
-  {id:'v04',e:'👗',name:'Tự chọn váy đi chơi',cost:120,desc:'Vy được chọn váy mặc đi chơi cuối tuần',for:'vy'},
-  {id:'v05',e:'💇',name:'Tết tóc công chúa',cost:150,desc:'Mẹ tết tóc kiểu công chúa Elsa/Anna',for:'vy'},
-  {id:'v06',e:'🧋',name:'1 ly trà sữa',cost:200,desc:'Trà sữa size nhỏ',for:'vy'},
+  {id:'v01',e:'🌸',name:'Sticker công chúa',cost:250,desc:'1 tờ sticker công chúa ánh kim',for:'vy'},
+  {id:'v02',e:'📺',name:'Xem 1 tập hoạt hình',cost:400,desc:'Cùng bố/mẹ xem 1 tập Disney',for:'vy'},
+  {id:'v03',e:'🍦',name:'Một cây kem',cost:500,desc:'Que kem yêu thích sau bữa tối',for:'vy'},
+  {id:'v04',e:'👗',name:'Tự chọn váy đi chơi',cost:600,desc:'Vy được chọn váy mặc đi chơi cuối tuần',for:'vy'},
+  {id:'v05',e:'💇',name:'Tết tóc công chúa',cost:750,desc:'Mẹ tết tóc kiểu công chúa Elsa/Anna',for:'vy'},
+  {id:'v06',e:'🧋',name:'1 ly trà sữa',cost:1000,desc:'Trà sữa size nhỏ',for:'vy'},
   // Tier 2 — Cuối tuần (300–800 xu)
-  {id:'v07',e:'📱',name:'iPad 30 phút',cost:300,desc:'30 phút chơi game/xem hoạt hình',for:'vy'},
-  {id:'v08',e:'📚',name:'Đi nhà sách',cost:350,desc:'1 buổi đi Fahasa/Tiki tự chọn sách đọc',for:'vy'},
-  {id:'v09',e:'🏊‍♀️',name:'Đi bơi 1 buổi',cost:400,desc:'1 buổi bơi ở bể bơi yêu thích',for:'vy'},
-  {id:'v10',e:'📖',name:'1 truyện tranh',cost:500,desc:'Mua 1 cuốn truyện tranh tự chọn',for:'vy'},
-  {id:'v11',e:'💅',name:'Vẽ nail art trẻ em',cost:600,desc:'Sơn móng + vẽ họa tiết an toàn cho bé',for:'vy'},
-  {id:'v12',e:'🎨',name:'Tô tượng / nặn slime',cost:700,desc:'1 buổi workshop sáng tạo',for:'vy'},
-  {id:'v13',e:'🎬',name:'Phim rạp',cost:800,desc:'Cả nhà đi xem phim hoạt hình ở rạp',for:'vy'},
+  {id:'v07',e:'📱',name:'iPad 30 phút',cost:1500,desc:'30 phút chơi game/xem hoạt hình',for:'vy'},
+  {id:'v08',e:'📚',name:'Đi nhà sách',cost:1750,desc:'1 buổi đi Fahasa/Tiki tự chọn sách đọc',for:'vy'},
+  {id:'v09',e:'🏊‍♀️',name:'Đi bơi 1 buổi',cost:2000,desc:'1 buổi bơi ở bể bơi yêu thích',for:'vy'},
+  {id:'v10',e:'📖',name:'1 truyện tranh',cost:2500,desc:'Mua 1 cuốn truyện tranh tự chọn',for:'vy'},
+  {id:'v11',e:'💅',name:'Vẽ nail art trẻ em',cost:3000,desc:'Sơn móng + vẽ họa tiết an toàn cho bé',for:'vy'},
+  {id:'v12',e:'🎨',name:'Tô tượng / nặn slime',cost:3500,desc:'1 buổi workshop sáng tạo',for:'vy'},
+  {id:'v13',e:'🎬',name:'Phim rạp',cost:4000,desc:'Cả nhà đi xem phim hoạt hình ở rạp',for:'vy'},
   // Tier 3 — Tháng (1000–2500 xu)
-  {id:'v14',e:'🌳',name:'Đi công viên 1 ngày',cost:1000,desc:'Picnic công viên + ăn vặt',for:'vy'},
-  {id:'v15',e:'🧁',name:'Bộ đồ làm bánh',cost:1200,desc:'Khuôn bánh + nguyên liệu cùng mẹ làm',for:'vy'},
-  {id:'v16',e:'🦁',name:'Đi sở thú',cost:1500,desc:'Sở thú Sài Gòn / Vinpearl Safari',for:'vy'},
-  {id:'v17',e:'🪆',name:'Búp bê nhỏ',cost:1800,desc:'Búp bê công chúa size nhỏ',for:'vy'},
-  {id:'v18',e:'🎠',name:'tiNi World',cost:2000,desc:'1 buổi chơi tiNi / Kizciti',for:'vy'},
-  {id:'v19',e:'👚',name:'1 chiếc váy mới',cost:2500,desc:'Mua váy hè/tết tự chọn',for:'vy'},
+  {id:'v14',e:'🌳',name:'Đi công viên 1 ngày',cost:5000,desc:'Picnic công viên + ăn vặt',for:'vy'},
+  {id:'v15',e:'🧁',name:'Bộ đồ làm bánh',cost:6000,desc:'Khuôn bánh + nguyên liệu cùng mẹ làm',for:'vy'},
+  {id:'v16',e:'🦁',name:'Đi sở thú',cost:7500,desc:'Sở thú Sài Gòn / Vinpearl Safari',for:'vy'},
+  {id:'v17',e:'🪆',name:'Búp bê nhỏ',cost:9000,desc:'Búp bê công chúa size nhỏ',for:'vy'},
+  {id:'v18',e:'🎠',name:'tiNi World',cost:10000,desc:'1 buổi chơi tiNi / Kizciti',for:'vy'},
+  {id:'v19',e:'👚',name:'1 chiếc váy mới',cost:12500,desc:'Mua váy hè/tết tự chọn',for:'vy'},
   // Tier 4 — Quý (3000–6000 xu)
-  {id:'v20',e:'💕',name:'Lego Friends',cost:3000,desc:'Bộ Lego Friends 200-300 mảnh',for:'vy'},
-  {id:'v21',e:'💄',name:'Bộ trang điểm trẻ em',cost:3500,desc:'Son + má hồng an toàn cho bé',for:'vy'},
-  {id:'v22',e:'👸',name:'Búp bê Barbie',cost:4000,desc:'Barbie chính hãng + phụ kiện',for:'vy'},
-  {id:'v23',e:'🍕',name:'Pizza Family',cost:4500,desc:'Pizza Hut/4P size lớn cho cả nhà',for:'vy'},
-  {id:'v24',e:'🐈',name:'Cà phê thú cưng',cost:5000,desc:'Cafe mèo / chó / cá Koi',for:'vy'},
-  {id:'v25',e:'🛍️',name:'Aeon Mall + buffet',cost:6000,desc:'1 ngày shopping + ăn buffet',for:'vy'},
+  {id:'v20',e:'💕',name:'Lego Friends',cost:15000,desc:'Bộ Lego Friends 200-300 mảnh',for:'vy'},
+  {id:'v21',e:'💄',name:'Bộ trang điểm trẻ em',cost:17500,desc:'Son + má hồng an toàn cho bé',for:'vy'},
+  {id:'v22',e:'👸',name:'Búp bê Barbie',cost:20000,desc:'Barbie chính hãng + phụ kiện',for:'vy'},
+  {id:'v23',e:'🍕',name:'Pizza Family',cost:22500,desc:'Pizza Hut/4P size lớn cho cả nhà',for:'vy'},
+  {id:'v24',e:'🐈',name:'Cà phê thú cưng',cost:25000,desc:'Cafe mèo / chó / cá Koi',for:'vy'},
+  {id:'v25',e:'🛍️',name:'Aeon Mall + buffet',cost:30000,desc:'1 ngày shopping + ăn buffet',for:'vy'},
   // Tier 5 — Mơ ước (8000+ xu)
-  {id:'v26',e:'🚌',name:'Du lịch 1 ngày',cost:8000,desc:'Vũng Tàu / Tam Đảo / Ba Vì 1 ngày',for:'vy'},
-  {id:'v27',e:'❄️',name:'Đầm Elsa thật',cost:10000,desc:'Đầm dạ hội Frozen chính hãng',for:'vy'},
-  {id:'v28',e:'🏰',name:'Lâu đài Lego Disney',cost:15000,desc:'Lego Disney Princess Castle',for:'vy'},
-  {id:'v29',e:'🛎️',name:'Sinh nhật khách sạn',cost:25000,desc:'Tổ chức sinh nhật ở khách sạn 4*',for:'vy'},
-  {id:'v30',e:'🎆',name:'Disneyland Hồng Kông',cost:50000,desc:'Chuyến đi mơ ước cả gia đình 🏰',for:'vy'},
+  {id:'v26',e:'🚌',name:'Du lịch 1 ngày',cost:40000,desc:'Vũng Tàu / Tam Đảo / Ba Vì 1 ngày',for:'vy'},
+  {id:'v27',e:'❄️',name:'Đầm Elsa thật',cost:50000,desc:'Đầm dạ hội Frozen chính hãng',for:'vy'},
+  {id:'v28',e:'🏰',name:'Lâu đài Lego Disney',cost:75000,desc:'Lego Disney Princess Castle',for:'vy'},
+  {id:'v29',e:'🛎️',name:'Sinh nhật khách sạn',cost:125000,desc:'Tổ chức sinh nhật ở khách sạn 4*',for:'vy'},
+  {id:'v30',e:'🎆',name:'Disneyland Hồng Kông',cost:250000,desc:'Chuyến đi mơ ước cả gia đình 🏰',for:'vy'},
 
   // ============ THÀNH LÂM — 30 phần thưởng (theme blocky) ============
   // Tier 1 — Hằng ngày (50–250 xu)
-  {id:'l01',e:'📚',name:'1 truyện đọc tối',cost:50,desc:'1 cuốn truyện ngắn đọc trước khi ngủ',for:'lam'},
-  {id:'l02',e:'📺',name:'YouTube 30 phút',cost:80,desc:'30 phút YouTube Kids tự chọn',for:'lam'},
-  {id:'l03',e:'🍦',name:'Một cây kem',cost:100,desc:'Que kem yêu thích sau bữa tối',for:'lam'},
-  {id:'l04',e:'🍽️',name:'Chọn món tối',cost:150,desc:'Lâm chọn món tối cho cả nhà ăn',for:'lam'},
-  {id:'l05',e:'🥤',name:'Trà sữa / nước ép',cost:200,desc:'1 ly trà sữa hoặc nước ép tươi',for:'lam'},
-  {id:'l06',e:'⛏️',name:'Minecraft 30 phút',cost:250,desc:'30 phút build Minecraft thoả thích',for:'lam'},
+  {id:'l01',e:'📚',name:'1 truyện đọc tối',cost:250,desc:'1 cuốn truyện ngắn đọc trước khi ngủ',for:'lam'},
+  {id:'l02',e:'📺',name:'YouTube 30 phút',cost:400,desc:'30 phút YouTube Kids tự chọn',for:'lam'},
+  {id:'l03',e:'🍦',name:'Một cây kem',cost:500,desc:'Que kem yêu thích sau bữa tối',for:'lam'},
+  {id:'l04',e:'🍽️',name:'Chọn món tối',cost:750,desc:'Lâm chọn món tối cho cả nhà ăn',for:'lam'},
+  {id:'l05',e:'🥤',name:'Trà sữa / nước ép',cost:1000,desc:'1 ly trà sữa hoặc nước ép tươi',for:'lam'},
+  {id:'l06',e:'⛏️',name:'Minecraft 30 phút',cost:1250,desc:'30 phút build Minecraft thoả thích',for:'lam'},
   // Tier 2 — Cuối tuần (300–800 xu)
-  {id:'l07',e:'🎮',name:'Roblox 30 phút',cost:300,desc:'30 phút chơi Roblox tự chọn game',for:'lam'},
-  {id:'l08',e:'⚽',name:'Đá bóng sân',cost:350,desc:'1 buổi thuê sân đá bóng cùng bố',for:'lam'},
-  {id:'l09',e:'🏊',name:'Đi bơi 1 buổi',cost:400,desc:'1 buổi bơi ở bể bơi yêu thích',for:'lam'},
-  {id:'l10',e:'🎴',name:'1 gói thẻ Pokemon',cost:500,desc:'1 booster pack Pokemon TCG',for:'lam'},
-  {id:'l11',e:'🍗',name:'KFC / Lotteria',cost:600,desc:'1 phần combo gà rán yêu thích',for:'lam'},
-  {id:'l12',e:'🐱',name:'Truyện Doraemon mới',cost:700,desc:'1 tập Doraemon hoặc Conan mới',for:'lam'},
-  {id:'l13',e:'🎬',name:'Phim rạp',cost:800,desc:'Cả nhà đi xem phim ở rạp',for:'lam'},
+  {id:'l07',e:'🎮',name:'Roblox 30 phút',cost:1500,desc:'30 phút chơi Roblox tự chọn game',for:'lam'},
+  {id:'l08',e:'⚽',name:'Đá bóng sân',cost:1750,desc:'1 buổi thuê sân đá bóng cùng bố',for:'lam'},
+  {id:'l09',e:'🏊',name:'Đi bơi 1 buổi',cost:2000,desc:'1 buổi bơi ở bể bơi yêu thích',for:'lam'},
+  {id:'l10',e:'🎴',name:'1 gói thẻ Pokemon',cost:2500,desc:'1 booster pack Pokemon TCG',for:'lam'},
+  {id:'l11',e:'🍗',name:'KFC / Lotteria',cost:3000,desc:'1 phần combo gà rán yêu thích',for:'lam'},
+  {id:'l12',e:'🐱',name:'Truyện Doraemon mới',cost:3500,desc:'1 tập Doraemon hoặc Conan mới',for:'lam'},
+  {id:'l13',e:'🎬',name:'Phim rạp',cost:4000,desc:'Cả nhà đi xem phim ở rạp',for:'lam'},
   // Tier 3 — Tháng (1000–2500 xu)
-  {id:'l14',e:'🕹️',name:'Game online 2 giờ',cost:1000,desc:'2 giờ chơi game cuối tuần',for:'lam'},
-  {id:'l15',e:'🚓',name:'Lego City nhỏ',cost:1200,desc:'Bộ Lego City 100-200 mảnh',for:'lam'},
-  {id:'l16',e:'🎠',name:'tiNi / VinKE',cost:1500,desc:'1 buổi chơi VinKE / Royal City',for:'lam'},
-  {id:'l17',e:'📦',name:'Bộ thẻ Pokemon hộp',cost:1800,desc:'Hộp thẻ 36 booster Pokemon',for:'lam'},
-  {id:'l18',e:'👕',name:'Áo bóng đá CLB',cost:2000,desc:'Áo Real / Barca / MU chính hãng',for:'lam'},
-  {id:'l19',e:'🍕',name:'Pizza Family',cost:2500,desc:'Pizza Hut/4P size lớn cho cả nhà',for:'lam'},
+  {id:'l14',e:'🕹️',name:'Game online 2 giờ',cost:5000,desc:'2 giờ chơi game cuối tuần',for:'lam'},
+  {id:'l15',e:'🚓',name:'Lego City nhỏ',cost:6000,desc:'Bộ Lego City 100-200 mảnh',for:'lam'},
+  {id:'l16',e:'🎠',name:'tiNi / VinKE',cost:7500,desc:'1 buổi chơi VinKE / Royal City',for:'lam'},
+  {id:'l17',e:'📦',name:'Bộ thẻ Pokemon hộp',cost:9000,desc:'Hộp thẻ 36 booster Pokemon',for:'lam'},
+  {id:'l18',e:'👕',name:'Áo bóng đá CLB',cost:10000,desc:'Áo Real / Barca / MU chính hãng',for:'lam'},
+  {id:'l19',e:'🍕',name:'Pizza Family',cost:12500,desc:'Pizza Hut/4P size lớn cho cả nhà',for:'lam'},
   // Tier 4 — Quý (3000–6000 xu)
-  {id:'l20',e:'🚀',name:'Lego Star Wars',cost:3000,desc:'Bộ Lego Star Wars 400-500 mảnh',for:'lam'},
-  {id:'l21',e:'🎧',name:'Tai nghe gaming',cost:3500,desc:'Headset có mic chơi game',for:'lam'},
-  {id:'l22',e:'🤖',name:'Robot điều khiển',cost:4000,desc:'RC robot có cảm biến',for:'lam'},
-  {id:'l23',e:'⛺',name:'Cắm trại cuối tuần',cost:4500,desc:'1 đêm cắm trại Ba Vì / Hòa Bình',for:'lam'},
-  {id:'l24',e:'🌐',name:'Minecraft Realms 1 năm',cost:5000,desc:'Server riêng chơi cùng bạn 12 tháng',for:'lam'},
-  {id:'l25',e:'🏟️',name:'Xem bóng đá V-League',cost:6000,desc:'1 trận V-League / U23 trên sân vận động',for:'lam'},
+  {id:'l20',e:'🚀',name:'Lego Star Wars',cost:15000,desc:'Bộ Lego Star Wars 400-500 mảnh',for:'lam'},
+  {id:'l21',e:'🎧',name:'Tai nghe gaming',cost:17500,desc:'Headset có mic chơi game',for:'lam'},
+  {id:'l22',e:'🤖',name:'Robot điều khiển',cost:20000,desc:'RC robot có cảm biến',for:'lam'},
+  {id:'l23',e:'⛺',name:'Cắm trại cuối tuần',cost:22500,desc:'1 đêm cắm trại Ba Vì / Hòa Bình',for:'lam'},
+  {id:'l24',e:'🌐',name:'Minecraft Realms 1 năm',cost:25000,desc:'Server riêng chơi cùng bạn 12 tháng',for:'lam'},
+  {id:'l25',e:'🏟️',name:'Xem bóng đá V-League',cost:30000,desc:'1 trận V-League / U23 trên sân vận động',for:'lam'},
   // Tier 5 — Mơ ước (8000+ xu)
-  {id:'l26',e:'🎮',name:'Switch game mới',cost:8000,desc:'1 game Nintendo Switch tự chọn',for:'lam'},
-  {id:'l27',e:'🏎️',name:'Lego Technic xe lớn',cost:10000,desc:'Lego Technic supercar 1000+ mảnh',for:'lam'},
-  {id:'l28',e:'🏖️',name:'Du lịch biển 2 ngày',cost:15000,desc:'Hạ Long / Sầm Sơn 2N1Đ',for:'lam'},
-  {id:'l29',e:'🎳',name:'Sinh nhật bowling',cost:25000,desc:'Tổ chức sinh nhật bowling cùng bạn',for:'lam'},
-  {id:'l30',e:'🎢',name:'Universal Singapore',cost:50000,desc:'Chuyến đi mơ ước cả gia đình 🚀',for:'lam'}
+  {id:'l26',e:'🎮',name:'Switch game mới',cost:40000,desc:'1 game Nintendo Switch tự chọn',for:'lam'},
+  {id:'l27',e:'🏎️',name:'Lego Technic xe lớn',cost:50000,desc:'Lego Technic supercar 1000+ mảnh',for:'lam'},
+  {id:'l28',e:'🏖️',name:'Du lịch biển 2 ngày',cost:75000,desc:'Hạ Long / Sầm Sơn 2N1Đ',for:'lam'},
+  {id:'l29',e:'🎳',name:'Sinh nhật bowling',cost:125000,desc:'Tổ chức sinh nhật bowling cùng bạn',for:'lam'},
+  {id:'l30',e:'🎢',name:'Universal Singapore',cost:250000,desc:'Chuyến đi mơ ước cả gia đình 🚀',for:'lam'}
 ];
 
 // Lưu lịch sử đổi quà per-profile
@@ -956,7 +1148,27 @@ function cancelRedemption(p,redemptionId){
 }
 // Số câu/session — gọi gen() nhiều lần ghép lại để có 30 câu/lượt
 const QPS=30;
-function buildQuestions(top){const out=[];let safe=0;while(out.length<QPS&&safe<20){out.push(...top.gen());safe++}return out.slice(0,QPS)}
+function buildQuestions(top){
+  // Dedupe: gọi gen() nhiều lần, chỉ giữ câu có prompt+choices KHÁC nhau
+  const out=[],seen=new Set();
+  let safe=0;
+  while(out.length<QPS&&safe<60){
+    safe++;
+    let added=false;
+    for(const q of top.gen()){
+      const key=q.prompt+'§'+(q.choices||[]).join('|');
+      if(!seen.has(key)){seen.add(key);out.push(q);added=true;if(out.length>=QPS)break}
+    }
+    // Nếu sau 10 vòng không thêm được câu mới → ngân hàng cạn, dùng những gì có
+    if(!added&&safe>10)break;
+  }
+  // Nếu vẫn chưa đủ 30 (ngân hàng nhỏ), shuffle những câu đã có và lặp lại để đủ số
+  if(out.length<QPS&&out.length>0){
+    const base=out.slice();
+    while(out.length<QPS){out.push(base[out.length%base.length])}
+  }
+  return out.slice(0,QPS);
+}
 // Bố/mẹ tặng/trừ xu thủ công (thưởng/phạt)
 function adjustCoins(p,delta){
   setCoins(p,Math.max(0,getCoins(p)+delta));
@@ -974,6 +1186,28 @@ function setKidPin(p,v){LS.set('kid_pin_'+p,v)}
 function getAttempts(p){return LS.get('attempts_'+p,[])}
 function logAttempt(p,att){const list=getAttempts(p);list.push(att);if(list.length>500)list.splice(0,list.length-500);LS.set('attempts_'+p,list)}
 function isTopicDoneToday(p,tid){const today=new Date().toISOString().slice(0,10);return LS.get('done_'+p+'_'+today,[]).includes(tid)}
+// Đếm số bài đã làm hôm nay theo môn
+function getTodayBySubject(p){
+  const today=new Date().toISOString().slice(0,10);
+  const att=getAttempts(p).filter(a=>a.d===today);
+  const out={math:0,english:0,vietnamese:0};
+  att.forEach(a=>{if(out[a.s]!==undefined)out[a.s]++});
+  return out;
+}
+// Mục tiêu ngày: mỗi môn 1 bài (= 3 bài cân bằng)
+const DAILY_TARGET={math:1,english:1,vietnamese:1};
+function isDayComplete(p){const t=getTodayBySubject(p);return t.math>=1&&t.english>=1&&t.vietnamese>=1}
+// Bonus xu khi hoàn thành cả 3 môn (1 lần/ngày)
+function checkDailyBonus(p){
+  const today=new Date().toISOString().slice(0,10);
+  if(LS.get('bonus_'+p+'_'+today,false))return false;
+  if(isDayComplete(p)){
+    LS.set('bonus_'+p+'_'+today,true);
+    setCoins(p,getCoins(p)+50);
+    return true;
+  }
+  return false;
+}
 function getDailyStats(p,days){
   const out=[];const today=new Date();
   for(let i=days-1;i>=0;i--){
@@ -1033,10 +1267,10 @@ function renderRewards(){
   const pending=redeemed.filter(r=>!r.delivered).reverse();
   const avatar=p==='vy'?princessChar('#92400E','#EC4899',38):blockyChar('#FBBF24','#3B82F6','#1E40AF',32);
   // Danh sách phần thưởng — tô màu theo mức độ "đắt"
-  const tier=(c)=>c<=200?'#10B981':c<=500?'#3B82F6':c<=1000?'#A78BFA':c<=2000?'#FB923C':'#EF4444';
+  const tier=(c)=>c<=1000?'#10B981':c<=2500?'#3B82F6':c<=5000?'#A78BFA':c<=10000?'#FB923C':'#EF4444';
   // Filter: chỉ hiện quà của bé hiện tại
   const visible=REWARDS.filter(r=>!r.for||r.for===p);
-  const tierName=(c)=>c<=250?'🟢 Hằng ngày':c<=800?'🔵 Cuối tuần':c<=2500?'🟡 Tháng':c<=6000?'🟣 Quý':'🌸 Mơ ước';
+  const tierName=(c)=>c<=1250?'🟢 Hằng ngày':c<=4000?'🔵 Cuối tuần':c<=12500?'🟡 Tháng':c<=30000?'🟣 Quý':'🌸 Mơ ước';
   let prevTier=null;
   const list=visible.map(r=>{
     const tn=tierName(r.cost);
@@ -1282,6 +1516,20 @@ function renderParent(){
     💡 Quy tắc: Đúng +1 🪙 · Sai −1 🪙 · Ví không âm. Bé dùng xu để đổi quà thật.
   </div>
   ${profiles.map(profileBlock).join('')}
+  ${(()=>{
+    // 🚨 Bảng phát hiện bất thường — sessions đáng ngờ (làm quá nhanh + accuracy cao)
+    const susAll=[];
+    profiles.forEach(p=>{
+      const list=getAttempts(p).filter(a=>a.sus).slice(-10).reverse();
+      list.forEach(a=>susAll.push({p,...a}));
+    });
+    if(susAll.length===0)return '<div style="background:#ECFDF5;border-radius:10px;padding:10px;font-size:12px;color:#065F46;margin:10px 0">✓ Không phát hiện bất thường — các bé làm bài bình thường.</div>';
+    return `<div style="background:#FEF2F2;border:2px solid #DC2626;border-radius:14px;padding:12px;margin:14px 0">
+      <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#991B1B">🚨 Phát hiện ${susAll.length} bài làm bất thường (quá nhanh)</p>
+      ${susAll.slice(0,8).map(a=>`<div style="background:white;border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:11px;color:#374151;display:flex;justify-content:space-between;align-items:center;gap:8px"><span><strong style="color:${a.p==='vy'?'#EC4899':'#3B82F6'}">${PROFILES[a.p].name}</strong> · ${a.tn} · ${a.d}</span><span style="font-size:10px;color:#991B1B;font-weight:600">${(a.ms/1000).toFixed(1)}s/câu · ${a.c}/${a.c+a.w}✓</span></div>`).join('')}
+      <p style="margin:6px 0 0;font-size:10px;color:#7F1D1D">💡 Ngưỡng: Vy &lt;2.5s/câu hoặc Lâm &lt;1.8s/câu + accuracy ≥85% → có thể anh/chị làm hộ.</p>
+    </div>`;
+  })()}
   ${progressTable()}
   <div style="background:#FEF3C7;border-radius:10px;padding:10px;font-size:11px;color:#92400E;margin-top:10px">
     💡 <strong>Mua quà:</strong> tự trừ xu ngay khi bé bấm "Đổi". Bố/mẹ chỉ duyệt khi đã trao tay.<br>
@@ -1388,6 +1636,13 @@ function renderLevel(){
   applyBodyTheme(t.id);
   const cnt={basic:countLevel(p,'basic'),advanced:countLevel(p,'advanced'),exam:countLevel(p,'exam')};
   const avatar=p==='vy'?princessChar('#92400E','#EC4899',46):blockyChar('#FBBF24','#3B82F6','#1E40AF',38);
+  const coins=getCoins(p);const tot=getTotalCorrect(p);const sk=getStreak(p);
+  const today=new Date().toISOString().slice(0,10);
+  const learnedToday=sk.last===today;
+  const bigAvatar=p==='vy'?princessChar('#92400E','#EC4899',92):blockyChar('#FBBF24','#3B82F6','#1E40AF',76);
+  const welcomeBg=p==='vy'?'linear-gradient(135deg,#FFE0F0 0%,#FFB7DC 50%,#FF6FB5 100%)':'linear-gradient(135deg,#DBEAFE 0%,#93C5FD 50%,#3B82F6 100%)';
+  const welcomeColor=p==='vy'?'#831843':'#1E3A8A';
+  const greeting=['Chào mừng trở lại','Hôm nay học gì nào','Sẵn sàng kiếm xu chưa','Mình tiếp tục nhé','Hôm nay là ngày đẹp trời để học'][new Date().getDate()%5];
   // 3 cấp độ — nếu count = 0 thì disable thẻ
   const levelCards=[
     {id:'basic',e:'📚',title:'Cơ bản',desc:'Bài chuẩn theo SGK lớp '+(p==='vy'?'2':'4'),color:'linear-gradient(135deg,#4DC3FF,#6BE38E)',count:cnt.basic},
@@ -1399,7 +1654,18 @@ function renderLevel(){
     <div class="namebar" style="display:flex;align-items:center;gap:8px;justify-content:center"><div class="bouncer">${avatar}</div><div><p class="nm">${info.name}</p><p class="gr">${info.grade} · ${t.label}</p></div></div>
     <span></span>
   </div>
-  <h1 style="text-align:center;font-size:20px;color:#6B46C1;font-weight:500;margin:14px 0 4px">Hôm nay học cấp độ nào?</h1>
+  <div style="background:${welcomeBg};border-radius:24px;padding:18px 16px;margin:14px 12px 18px;text-align:center;box-shadow:0 8px 22px rgba(0,0,0,.15);position:relative;overflow:hidden">
+    <div class="bouncer" style="display:flex;justify-content:center;margin-bottom:8px">${bigAvatar}</div>
+    <p style="margin:0;font-size:13px;color:${welcomeColor};opacity:.9;font-weight:500">${greeting} 👋</p>
+    <h2 style="margin:2px 0 12px;font-size:22px;color:${welcomeColor};font-weight:600">${info.name}!</h2>
+    <div style="background:rgba(255,255,255,.7);border-radius:18px;padding:14px 10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;backdrop-filter:blur(8px)">
+      <div style="text-align:center"><p style="margin:0;font-size:24px;font-weight:600;color:#D97706">🪙 ${coins.toLocaleString('vi')}</p><p style="margin:0;font-size:10px;color:#92400E;text-transform:uppercase;letter-spacing:.4px;font-weight:600">Xu đã có</p></div>
+      <div style="text-align:center;border-left:1px solid rgba(0,0,0,.08);border-right:1px solid rgba(0,0,0,.08)"><p style="margin:0;font-size:24px;font-weight:600;color:#DC2626">🔥 ${sk.cur}</p><p style="margin:0;font-size:10px;color:#991B1B;text-transform:uppercase;letter-spacing:.4px;font-weight:600">Chuỗi ngày</p></div>
+      <div style="text-align:center"><p style="margin:0;font-size:24px;font-weight:600;color:#059669">✓ ${tot}</p><p style="margin:0;font-size:10px;color:#065F46;text-transform:uppercase;letter-spacing:.4px;font-weight:600">Tổng câu đúng</p></div>
+    </div>
+    ${learnedToday?'<p style="margin:10px 0 0;font-size:12px;color:'+welcomeColor+';font-weight:600">✨ Hôm nay đã học rồi — giỏi quá!</p>':'<p style="margin:10px 0 0;font-size:12px;color:'+welcomeColor+';font-weight:600">📅 Hôm nay chưa học — bắt đầu thôi!</p>'}
+  </div>
+  <h1 style="text-align:center;font-size:18px;color:#6B46C1;font-weight:500;margin:14px 0 4px">Hôm nay học cấp độ nào?</h1>
   <p class="sub" style="text-align:center;color:#6B7280;font-size:12px;margin:0 0 14px">Chọn 1 trong 3 — đổi sau cũng được</p>
   <div style="display:flex;flex-direction:column;gap:10px;padding:0 14px">
     ${levelCards.map(L=>`<button class="lvl-card" data-l="${L.id}" ${L.count===0?'disabled':''} style="position:relative;background:${L.count===0?'#E5E7EB':L.color};color:${L.count===0?'#9CA3AF':'white'};border:none;border-radius:18px;padding:18px;font-family:inherit;cursor:${L.count===0?'not-allowed':'pointer'};text-align:left;display:flex;align-items:center;gap:14px;box-shadow:0 6px 16px rgba(0,0,0,.1);${L.count===0?'opacity:.7':''}">
@@ -1419,10 +1685,15 @@ function renderLevel(){
 function renderDashboard(){
   const p=state.profile,info=PROFILES[p],t=THEMES[info.theme];
   applyBodyTheme(t.id);
+  // Check daily bonus → grant nếu đủ 3 môn lần đầu
+  if(checkDailyBonus(p))setTimeout(()=>alert('🎉 Tuyệt! Bé đã hoàn thành 3 môn hôm nay!\n\nBonus +50 🪙 cho lộ trình cân bằng!'),300);
   const streakNow=getStreak(p).cur;
   const coins=getCoins(p);
   const stats7=getDailyStats(p,7);
   const today=stats7[stats7.length-1];
+  const bySubj=getTodayBySubject(p);
+  const dayComplete=isDayComplete(p);
+  const bonusEarned=LS.get('bonus_'+p+'_'+new Date().toISOString().slice(0,10),false);
   const weekC=stats7.reduce((s,x)=>s+x.c,0),weekT=stats7.reduce((s,x)=>s+x.total,0);
   const weekAcc=weekT>0?Math.round(weekC/weekT*100):0;
   const maxBar=Math.max(...stats7.map(x=>x.total),1);
@@ -1475,17 +1746,34 @@ function renderDashboard(){
     </div>
     <span style="background:rgba(255,255,255,.3);padding:6px 12px;border-radius:99px;font-size:12px;font-weight:600">📊 Xem</span>
   </button>
+  <div style="background:white;border-radius:14px;padding:12px 14px;margin-bottom:12px;box-shadow:0 4px 12px rgba(0,0,0,.06)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <p style="margin:0;font-size:13px;font-weight:600;color:#374151">📋 Lộ trình hôm nay (3 môn cân bằng)</p>
+      ${dayComplete?(bonusEarned?'<span style="background:#10B981;color:white;padding:3px 10px;border-radius:99px;font-size:10px;font-weight:600">✓ Đủ +50🪙</span>':'<span style="background:#F59E0B;color:white;padding:3px 10px;border-radius:99px;font-size:10px;font-weight:600">🎁 +50🪙 đợi</span>'):'<span style="font-size:10px;color:#6B7280">'+(3-bySubj.math-bySubj.english-bySubj.vietnamese>0?'còn '+(3-Math.min(bySubj.math,1)-Math.min(bySubj.english,1)-Math.min(bySubj.vietnamese,1))+' môn':'')+'</span>'}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+      ${[['math','🧮','Toán','#3B82F6'],['english','🔤','Anh','#EC4899'],['vietnamese','📖','Việt','#F59E0B']].map(([k,e,n,c])=>{const done=bySubj[k]>=1;return `<div style="background:${done?c:'#F3F4F6'};color:${done?'white':'#9CA3AF'};border-radius:10px;padding:8px;text-align:center"><div style="font-size:18px">${done?'✓':e}</div><div style="font-size:10px;font-weight:600;margin-top:2px">${n}</div><div style="font-size:9px;opacity:.85">${bySubj[k]} bài</div></div>`}).join('')}
+    </div>
+    ${dayComplete&&!bonusEarned?'<p style="margin:8px 0 0;font-size:11px;color:#92400E;text-align:center;font-weight:600">🎉 Hoàn thành 3 môn! Bấm nút bất kỳ để nhận +50 xu thưởng cân bằng.</p>':''}
+  </div>
   <p class="sub">Chọn môn học</p>
   <div class="subjs">
-    <div class="scard" data-s="math" style="background:linear-gradient(135deg,#4DC3FF,#6BE38E)"><span class="e">🧮</span><h3 class="ct">Toán</h3><p class="cd">Phép tính & hình</p></div>
-    <div class="scard" data-s="english" style="background:linear-gradient(135deg,#FF6FB5,#A678FF)"><span class="e">🔤</span><h3 class="ct">Tiếng Anh</h3><p class="cd">Vocabulary & Grammar</p></div>
-    <div class="scard" data-s="vietnamese" style="background:linear-gradient(135deg,#FBBF24,#F97316)"><span class="e">📖</span><h3 class="ct">Tiếng Việt</h3><p class="cd">Chính tả, đọc hiểu</p></div>
+    <div class="scard" data-s="math" style="background:linear-gradient(135deg,#4DC3FF,#6BE38E);${bySubj.math>=1?'opacity:.65':''}"><span class="e">🧮${bySubj.math>=1?' ✓':''}</span><h3 class="ct">Toán</h3><p class="cd">${bySubj.math>=1?'Đã đủ — học thêm tuỳ ý':'Phép tính & hình'}</p></div>
+    <div class="scard" data-s="english" style="background:linear-gradient(135deg,#FF6FB5,#A678FF);${bySubj.english>=1?'opacity:.65':''}"><span class="e">🔤${bySubj.english>=1?' ✓':''}</span><h3 class="ct">Tiếng Anh</h3><p class="cd">${bySubj.english>=1?'Đã đủ — học thêm tuỳ ý':'Vocabulary & Grammar'}</p></div>
+    <div class="scard" data-s="vietnamese" style="background:linear-gradient(135deg,#FBBF24,#F97316);${bySubj.vietnamese>=1?'opacity:.65':''}"><span class="e">📖${bySubj.vietnamese>=1?' ✓':''}</span><h3 class="ct">Tiếng Việt</h3><p class="cd">${bySubj.vietnamese>=1?'Đã đủ — học thêm tuỳ ý':'Chính tả, đọc hiểu'}</p></div>
   </div>` + bgSceneHTML(t.id);
   root.querySelector('#back').onclick=()=>{state.profile=null;state.screen='select';render()};
   root.querySelector('#changeLevel').onclick=()=>{state.screen='level';render()};
   root.querySelector('#openRewards').onclick=()=>{state.screen='rewards';render()};
   const rmBtn=root.querySelector('#openRoadmap');if(rmBtn)rmBtn.onclick=()=>{state.screen='roadmap';render()};
-  root.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{state.subj=b.dataset.s;state.screen='topics';render()});
+  root.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{
+    const s=b.dataset.s;
+    if(bySubj[s]>=1&&!isDayComplete(p)){
+      const remaining=['math','english','vietnamese'].filter(x=>bySubj[x]<1).map(x=>({math:'Toán',english:'Tiếng Anh',vietnamese:'Tiếng Việt'}[x])).join(' + ');
+      if(!confirm(`Bé đã học môn này hôm nay rồi 😊\n\nĐể cân bằng, bé nên học: ${remaining} trước.\n\nBấm OK nếu vẫn muốn học tiếp, hoặc Cancel để chuyển môn khác.`))return;
+    }
+    state.subj=s;state.screen='topics';render();
+  });
 }
 
 function renderRoadmap(){
@@ -1572,7 +1860,7 @@ function renderLesson(){
   root.querySelector('#back').onclick=()=>{state.screen='topics';render()};
   const spk=root.querySelector('#spk');if(spk)spk.onclick=e=>speak(ex.p,top.lang||'vi-VN',e.currentTarget);
   if(!allShown){const sk=root.querySelector('#skip');if(sk)sk.onclick=()=>{state.stepShown=total;render()};setTimeout(()=>{if(state.screen==='lesson'&&state.stepShown<total){state.stepShown++;render()}},1500)}
-  if(allShown){const go=root.querySelector('#go');if(go)go.onclick=()=>{state.questions=buildQuestions(top);state.qIndex=0;state.score=0;state.correct=0;state.wrong=0;state.points=0;state.wrongQs=[];state.picked=null;state.screen='quiz';render()}}
+  if(allShown){const go=root.querySelector('#go');if(go)go.onclick=()=>{state.questions=buildQuestions(top);state.qIndex=0;state.score=0;state.correct=0;state.wrong=0;state.points=0;state.wrongQs=[];state.picked=null;state.times=[];state.qStartTime=Date.now();state.screen='quiz';render()}}
 }
 
 function renderQuiz(){
@@ -1602,6 +1890,8 @@ function renderQuiz(){
 function pick(i){
   if(state.picked!==null)return;
   state.picked=i;
+  const ms=Date.now()-(state.qStartTime||Date.now());
+  state.times.push(ms);
   const q=state.questions[state.qIndex];const correct=i===q.answerIndex;
   const isHard=state.level!=='basic'; // advanced + exam = câu khó
   const ptsThis=correct?(isHard?2:1):-1;
@@ -1611,23 +1901,26 @@ function pick(i){
   setTimeout(()=>{
     if(state.qIndex===state.questions.length-1){
       const p=state.profile;
-      const net=state.points; // tổng điểm thực sự (đã tính khó/dễ + sàn không áp ở đây)
+      const replayed=isTopicDoneToday(p,state.topic.id); // bài đã làm hôm nay → không cộng xu
+      const net=replayed?0:state.points; // tổng điểm thực sự (đã tính khó/dễ)
       const oldBal=getCoins(p);
-      const newCoins=Math.max(0,oldBal+net);
+      const newCoins=replayed?oldBal:Math.max(0,oldBal+net);
       const realDelta=newCoins-oldBal;
-      setCoins(p,newCoins);
+      if(!replayed)setCoins(p,newCoins);
       const newTotal=getTotalCorrect(p)+state.correct;setTotalCorrect(p,newTotal);
-      logAttempt(p,{d:new Date().toISOString().slice(0,10),s:state.subj,tid:state.topic.id,tn:state.topic.t,c:state.correct,w:state.wrong,pts:state.points,lv:state.level});
+      const avgMs=state.times.length>0?Math.round(state.times.reduce((a,b)=>a+b,0)/state.times.length):0;
+      const sus=avgMs>0&&avgMs<(p==='vy'?2500:1800)&&state.correct/state.questions.length>=0.85; // Vy < 2.5s/câu hoặc Lâm < 1.8s/câu + accuracy ≥85% → khả nghi
+      logAttempt(p,{d:new Date().toISOString().slice(0,10),s:state.subj,tid:state.topic.id,tn:state.topic.t,c:state.correct,w:state.wrong,pts:state.points,lv:state.level,ms:avgMs,sus,t:Date.now()});
       const newStreak=checkInToday(p);
       state.newAch=checkUnlocks(p);
-      state.lastResult={title:state.topic.t,correct:state.correct,wrong:state.wrong,total:state.questions.length,points:state.points,isHard,coinsNet:net,coinsReal:realDelta,newBal:newCoins,streak:newStreak,floored:net!==realDelta,wrongQs:state.wrongQs.slice()};
+      state.lastResult={title:state.topic.t,correct:state.correct,wrong:state.wrong,total:state.questions.length,points:state.points,isHard,replayed,coinsNet:net,coinsReal:realDelta,newBal:newCoins,streak:newStreak,floored:net!==realDelta,wrongQs:state.wrongQs.slice(),avgMs,sus};
       // Mark topic done today
       const today=new Date().toISOString().slice(0,10);
       const doneKey='done_'+p+'_'+today;
       const doneSet=LS.get(doneKey,[]);
       if(!doneSet.includes(state.topic.id)){doneSet.push(state.topic.id);LS.set(doneKey,doneSet)}
       state.screen='result';render();
-    }else{state.qIndex++;state.picked=null;render()}
+    }else{state.qIndex++;state.picked=null;state.qStartTime=Date.now();render()}
   },correct?1100:2200);
 }
 
@@ -1650,7 +1943,10 @@ function renderResult(){
   const pp=r.isHard?2:1;
   const breakdown=`Đúng ${r.correct} × ${pp}đ = +${r.correct*pp} · Sai ${r.wrong} × −1đ = −${r.wrong}`;
   let coinBox='';
-  if(net>0)coinBox=`<div class="points-earn" style="background:linear-gradient(135deg,#FBBF24,#F59E0B)"><span class="big">+${real} 🪙</span><span class="sm">${breakdown}${r.floored?' · Sàn 0':''}<br>Ví: ${r.newBal} 🪙 · 🔥 ${r.streak}${r.isHard?' · 🔥 Câu khó ×2':''}</span></div>`;
+  if(r.replayed){
+    coinBox=`<div class="points-earn" style="background:linear-gradient(135deg,#7C3AED,#5B21B6)"><span class="big">🔄 Làm lại</span><span class="sm">${breakdown}<br>Bài này đã làm hôm nay rồi — không cộng xu nhé!<br>Ví giữ nguyên: ${r.newBal} 🪙 · 🔥 ${r.streak}</span></div>`;
+  }
+  else if(net>0)coinBox=`<div class="points-earn" style="background:linear-gradient(135deg,#FBBF24,#F59E0B)"><span class="big">+${real} 🪙</span><span class="sm">${breakdown}${r.floored?' · Sàn 0':''}<br>Ví: ${r.newBal} 🪙 · 🔥 ${r.streak}${r.isHard?' · 🔥 Câu khó ×2':''}</span></div>`;
   else if(net===0)coinBox=`<div class="points-earn" style="background:linear-gradient(135deg,#9CA3AF,#6B7280)"><span class="big">±0 🪙</span><span class="sm">${breakdown}<br>Ví: ${r.newBal} 🪙 · 🔥 ${r.streak}</span></div>`;
   else coinBox=`<div class="points-earn" style="background:linear-gradient(135deg,#F87171,#EF4444)"><span class="big">${real} 🪙</span><span class="sm">${breakdown}${r.floored?' · Sàn 0':''}<br>Ví: ${r.newBal} 🪙 · 🔥 ${r.streak}</span></div>`;
   root.innerHTML=`<div class="result">
@@ -1658,7 +1954,7 @@ function renderResult(){
     <h3 style="color:#6B46C1;font-weight:600;margin:0">${r.title}</h3>
     <p class="s">${r.correct} / ${r.total}</p>
     <p class="m">${m}</p>
-    ${coinBox}
+    ${r.sus?`<div style="background:#FEF2F2;border:2px solid #DC2626;border-radius:14px;padding:12px;margin:10px 0;text-align:left"><p style="margin:0;font-size:13px;font-weight:600;color:#991B1B">🚨 Có vẻ bé làm bài quá nhanh!</p><p style="margin:4px 0 0;font-size:12px;color:#7F1D1D;line-height:1.5">Trung bình ${(r.avgMs/1000).toFixed(1)}s/câu — bố/mẹ kiểm tra xem có phải đúng bé đang làm không nhé.</p></div>`:''}
     ${r.wrong>0?`<br><button class="btn-go" id="rev" style="background:linear-gradient(90deg,#FB923C,#F59E0B);margin-bottom:8px">📖 Xem lại ${r.wrong} bài sai</button>`:''}
     <br><button class="btn-go" id="cont">Tiếp tục 🚀</button>
   </div>`;
@@ -1676,9 +1972,6 @@ function showAchModal(){
   document.body.appendChild(ov);
 }
 
-if('speechSynthesis' in window){window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices()}
-
-
 function renderReview(){
   const r=state.lastResult;
   if(!r||!r.wrongQs||r.wrongQs.length===0){state.screen='result';render();return}
@@ -1692,6 +1985,7 @@ function renderReview(){
     return `<div style="background:white;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 4px 12px rgba(0,0,0,.06);border-left:5px solid #EF4444">
       <p style="margin:0 0 8px;font-size:11px;color:#9CA3AF;font-weight:600">CÂU ${idx+1}</p>
       <p style="margin:0 0 10px;font-size:14px;font-weight:600;color:#1F2937;line-height:1.5">${q.prompt}</p>
+      <div style="background:#FEF2F2;border-radius:10px;padding:8px 10px;margin-bottom:6px"><span style="font-size:11px;color:#991B1B;font-weight:600">✗ Bé chọn:</span> <span style="font-size:13px;color:#7F1D1D">${yourAns}</span></div>
       <div style="background:#ECFDF5;border-radius:10px;padding:8px 10px;margin-bottom:8px"><span style="font-size:11px;color:#065F46;font-weight:600">✓ Đáp án đúng:</span> <span style="font-size:13px;color:#064E3B;font-weight:600">${rightAns}</span></div>
       <div style="background:#FEF3C7;border-radius:10px;padding:10px;margin-top:6px"><p style="margin:0 0 4px;font-size:11px;font-weight:600;color:#92400E">💡 Giải thích</p><p style="margin:0;font-size:12px;color:#78350F;line-height:1.5">${expl}</p></div>
     </div>`;
