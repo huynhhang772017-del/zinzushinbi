@@ -1068,7 +1068,7 @@ const REWARDS=[
   {id:'v15',e:'🧁',name:'Bộ đồ làm bánh',cost:6000,desc:'Khuôn bánh + nguyên liệu cùng mẹ làm',for:'vy'},
   {id:'v16',e:'🦁',name:'Đi sở thú',cost:7500,desc:'Sở thú Sài Gòn / Vinpearl Safari',for:'vy'},
   {id:'v17',e:'🪆',name:'Búp bê nhỏ',cost:9000,desc:'Búp bê công chúa size nhỏ',for:'vy'},
-  {id:'v18',e:'🎠',name:'tiNi World',cost:10000,desc:'1 buổi chơi tiNi / Kizciti',for:'vy'},
+  {id:'v18',e:'🛼',name:'Bộ patin nữ',cost:10000,desc:'Bộ giày patin trẻ em + đồ bảo hộ ⭐ MỐC 10K',for:'vy'},
   {id:'v19',e:'👚',name:'1 chiếc váy mới',cost:12500,desc:'Mua váy hè/tết tự chọn',for:'vy'},
   // Tier 4 — Quý (3000–6000 xu)
   {id:'v20',e:'💕',name:'Lego Friends',cost:15000,desc:'Bộ Lego Friends 200-300 mảnh',for:'vy'},
@@ -1105,7 +1105,7 @@ const REWARDS=[
   {id:'l15',e:'🚓',name:'Lego City nhỏ',cost:6000,desc:'Bộ Lego City 100-200 mảnh',for:'lam'},
   {id:'l16',e:'🎠',name:'tiNi / VinKE',cost:7500,desc:'1 buổi chơi VinKE / Royal City',for:'lam'},
   {id:'l17',e:'📦',name:'Bộ thẻ Pokemon hộp',cost:9000,desc:'Hộp thẻ 36 booster Pokemon',for:'lam'},
-  {id:'l18',e:'👕',name:'Áo bóng đá CLB',cost:10000,desc:'Áo Real / Barca / MU chính hãng',for:'lam'},
+  {id:'l18',e:'🎮',name:'Bộ PS5',cost:10000,desc:'Máy chơi game PlayStation 5 ⭐ MỐC 10K',for:'lam'},
   {id:'l19',e:'🍕',name:'Pizza Family',cost:12500,desc:'Pizza Hut/4P size lớn cho cả nhà',for:'lam'},
   // Tier 4 — Quý (3000–6000 xu)
   {id:'l20',e:'🚀',name:'Lego Star Wars',cost:15000,desc:'Bộ Lego Star Wars 400-500 mảnh',for:'lam'},
@@ -1125,23 +1125,45 @@ const REWARDS=[
 // Lưu lịch sử đổi quà per-profile
 function getRedeemed(p){return LS.get('redeemed_'+p,[])}
 function addRedemption(p,rewardId){
+  // Bé bấm Đổi → tạo request 'pending' (chưa trừ xu, chờ bố/mẹ duyệt)
   const list=getRedeemed(p);
   const r=REWARDS.find(x=>x.id===rewardId);
-  list.push({id:'re-'+Date.now(),rewardId,name:r.name,emoji:r.e,cost:r.cost,date:new Date().toISOString().slice(0,10),delivered:false});
+  list.push({id:'re-'+Date.now(),rewardId,name:r.name,emoji:r.e,cost:r.cost,date:new Date().toISOString().slice(0,10),status:'pending',delivered:false});
   LS.set('redeemed_'+p,list);
-  setCoins(p,getCoins(p)-r.cost);
+  // KHÔNG trừ xu ngay nữa — chờ duyệt
+}
+function approveRedemption(p,redemptionId){
+  // Bố/mẹ duyệt → trừ xu + chuyển trạng thái sang 'approved' (chờ trao quà)
+  const list=getRedeemed(p);
+  const i=list.findIndex(r=>r.id===redemptionId);
+  if(i<0||list[i].status!=='pending')return false;
+  if(getCoins(p)<list[i].cost){alert('❌ Bé không đủ xu! Hiện có '+getCoins(p)+' 🪙, cần '+list[i].cost+' 🪙.');return false}
+  setCoins(p,getCoins(p)-list[i].cost);
+  list[i].status='approved';
+  LS.set('redeemed_'+p,list);
+  return true;
+}
+function rejectRedemption(p,redemptionId){
+  // Bố/mẹ từ chối yêu cầu (khi còn pending) → xoá khỏi danh sách
+  const list=getRedeemed(p);
+  const i=list.findIndex(r=>r.id===redemptionId);
+  if(i<0||list[i].status!=='pending')return false;
+  list.splice(i,1);
+  LS.set('redeemed_'+p,list);
+  return true;
 }
 function markDelivered(p,redemptionId){
   const list=getRedeemed(p);
   const i=list.findIndex(r=>r.id===redemptionId);
-  if(i>=0){list[i].delivered=true;LS.set('redeemed_'+p,list)}
+  if(i>=0){list[i].delivered=true;list[i].status='delivered';LS.set('redeemed_'+p,list)}
 }
-// Huỷ đơn quà & hoàn xu (chỉ áp dụng đơn chưa trao)
+// Huỷ đơn quà đã duyệt & hoàn xu (chỉ áp dụng đơn chưa trao)
 function cancelRedemption(p,redemptionId){
   const list=getRedeemed(p);
   const i=list.findIndex(r=>r.id===redemptionId);
   if(i<0||list[i].delivered)return false;
-  setCoins(p,getCoins(p)+list[i].cost);
+  // Hoàn xu chỉ khi đã approved (đã bị trừ xu)
+  if(list[i].status==='approved')setCoins(p,getCoins(p)+list[i].cost);
   list.splice(i,1);
   LS.set('redeemed_'+p,list);
   return true;
@@ -1317,9 +1339,9 @@ function renderRewards(){
   root.querySelectorAll('.redeem-btn').forEach(b=>b.onclick=()=>{
     const r=REWARDS.find(x=>x.id===b.dataset.id);
     if(getCoins(p)<r.cost)return;
-    if(confirm(`Đổi "${r.name}" với ${r.cost} 🪙?\n\nVí xu hiện tại: ${getCoins(p)} 🪙\nSau khi đổi: ${getCoins(p)-r.cost} 🪙\n\nBố/mẹ sẽ trao quà thật trong tuần.`)){
+    if(confirm(`Gửi yêu cầu đổi "${r.name}" (${r.cost} 🪙)?\n\n⚠️ Bố/mẹ sẽ duyệt trước khi trừ xu nhé.\nVí hiện có: ${getCoins(p)} 🪙\n\nBấm OK để gửi yêu cầu.`)){
       addRedemption(p,r.id);
-      alert(`🎉 Đã đặt quà "${r.name}"!\n\nĐợi bố/mẹ trao quà nhé. Quà chờ trao hiện ở khung vàng phía trên.`);
+      alert(`📨 Đã gửi yêu cầu đổi "${r.name}"!\n\nĐợi bố/mẹ duyệt — chưa trừ xu đâu nhé. Khi bố/mẹ duyệt mới trừ xu và trao quà.`);
       render();
     }
   });
@@ -1463,23 +1485,33 @@ function renderParent(){
   const profileBlock=(p)=>{
     const info=PROFILES[p];const coins=getCoins(p);
     const all=getRedeemed(p).slice().reverse();
-    const pending=all.filter(r=>!r.delivered);
-    const done=all.filter(r=>r.delivered);
+    const requests=all.filter(r=>r.status==='pending');
+    const approved=all.filter(r=>r.status==='approved'||(r.status===undefined&&!r.delivered));
+    const done=all.filter(r=>r.delivered||r.status==='delivered');
     const totalCorrect=getTotalCorrect(p);
     const streak=getStreak(p);
-    const renderItem=(r,canAct)=>`<div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:10px;margin:6px 0;display:flex;gap:10px;align-items:center">
-      <span style="font-size:28px">${r.emoji}</span>
-      <div style="flex:1;min-width:0">
-        <p style="margin:0;font-size:13px;font-weight:600;color:#1F2937">${r.name}</p>
-        <p style="margin:2px 0 0;font-size:10px;color:#6B7280">📅 ${r.date} · ${r.cost} 🪙 ${r.delivered?'· ✓ Đã trao':'· ⏳ Chờ trao'}</p>
-      </div>
-      ${canAct?`<div style="display:flex;flex-direction:column;gap:4px">
+    const renderItem=(r,kind)=>{
+      const dateLine=kind==='request'?'📨 Yêu cầu '+r.date+' · '+r.cost+' 🪙 (chưa trừ xu)':kind==='approved'?'✓ Duyệt rồi · '+r.cost+' 🪙 · ⏳ Chờ trao':'📅 '+r.date+' · '+r.cost+' 🪙 · ✓ Đã trao';
+      const enoughCoins=getCoins(p)>=r.cost;
+      const actions=kind==='request'?`<div style="display:flex;flex-direction:column;gap:4px">
+        <button class="mini-btn approve" data-p="${p}" data-id="${r.id}" ${enoughCoins?'':'disabled style="opacity:.5;cursor:not-allowed"'} style="background:#10B981;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">✓ Duyệt (trừ ${r.cost}🪙)</button>
+        <button class="mini-btn reject" data-p="${p}" data-id="${r.id}" style="background:#EF4444;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">✗ Từ chối</button>
+      </div>`:kind==='approved'?`<div style="display:flex;flex-direction:column;gap:4px">
         <button class="mini-btn deliver" data-p="${p}" data-id="${r.id}" style="background:#10B981;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">✓ Đã trao</button>
         <button class="mini-btn cancel" data-p="${p}" data-id="${r.id}" style="background:#EF4444;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">✗ Huỷ + hoàn xu</button>
-      </div>`:''}
-    </div>`;
-    const pendingHtml=pending.length?pending.map(r=>renderItem(r,true)).join(''):'<p style="font-size:12px;color:#9CA3AF;font-style:italic;margin:6px 0">Không có đơn nào chờ trao.</p>';
-    const doneHtml=done.length?done.slice(0,5).map(r=>renderItem(r,false)).join(''):'<p style="font-size:12px;color:#9CA3AF;font-style:italic;margin:6px 0">Chưa có quà nào đã trao.</p>';
+      </div>`:'';
+      return `<div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:10px;margin:6px 0;display:flex;gap:10px;align-items:center;${kind==='request'?'border-left:4px solid #F59E0B':''}">
+        <span style="font-size:28px">${r.emoji}</span>
+        <div style="flex:1;min-width:0">
+          <p style="margin:0;font-size:13px;font-weight:600;color:#1F2937">${r.name}</p>
+          <p style="margin:2px 0 0;font-size:10px;color:#6B7280">${dateLine}${!enoughCoins&&kind==='request'?' · <span style=color:#DC2626;font-weight:600>⚠️ THIẾU XU</span>':''}</p>
+        </div>
+        ${actions}
+      </div>`;
+    };
+    const requestsHtml=requests.length?requests.map(r=>renderItem(r,'request')).join(''):'<p style="font-size:12px;color:#9CA3AF;font-style:italic;margin:6px 0">Không có yêu cầu nào.</p>';
+    const pendingHtml=approved.length?approved.map(r=>renderItem(r,'approved')).join(''):'<p style="font-size:12px;color:#9CA3AF;font-style:italic;margin:6px 0">Không có quà nào chờ trao.</p>';
+    const doneHtml=done.length?done.slice(0,5).map(r=>renderItem(r,'done')).join(''):'<p style="font-size:12px;color:#9CA3AF;font-style:italic;margin:6px 0">Chưa có quà nào đã trao.</p>';
     return `<div style="background:#F9FAFB;border-radius:14px;padding:14px;margin-bottom:14px;border:2px solid ${p==='vy'?'#FF6FB5':'#3B82F6'}">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
         <h3 style="margin:0;color:${p==='vy'?'#BE185D':'#1E40AF'};font-weight:600;flex:1">${info.name} <span style="font-size:11px;color:#6B7280;font-weight:400">(${info.grade})</span></h3>
@@ -1501,7 +1533,8 @@ function renderParent(){
         <span style="font-size:11px;color:#374151;flex:1">🔑 PIN của ${info.name}: <strong style="color:${p==='vy'?'#BE185D':'#1E40AF'};letter-spacing:2px;font-family:monospace">${getKidPin(p)}</strong></span>
         <button class="mini-btn changeKidPin" data-p="${p}" style="background:#6366F1;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Đổi PIN</button>
       </div>
-      <p style="margin:8px 0 4px;font-size:12px;font-weight:600;color:#92400E">⏳ Quà chờ trao (${pending.length})</p>
+      ${requests.length?`<p style="margin:8px 0 4px;font-size:12px;font-weight:600;color:#B45309">📨 Yêu cầu chờ duyệt (${requests.length}) — Bé đã chọn quà, chờ bố/mẹ duyệt</p>${requestsHtml}`:''}
+      <p style="margin:8px 0 4px;font-size:12px;font-weight:600;color:#92400E">⏳ Quà đã duyệt — chờ trao (${approved.length})</p>
       ${pendingHtml}
       <p style="margin:12px 0 4px;font-size:12px;font-weight:600;color:#065F46">✓ Lịch sử quà đã trao (${done.length} — hiện 5 gần nhất)</p>
       ${doneHtml}
@@ -1541,8 +1574,19 @@ function renderParent(){
     const newPin=prompt('Nhập PIN mới (4-6 chữ số):');if(!newPin||!/^\d{4,6}$/.test(newPin)){alert('❌ PIN mới phải 4-6 chữ số.');return}
     setParentPin(newPin);alert('✅ Đã đổi PIN. Lần sau dùng PIN mới nhé.');
   };
+  root.querySelectorAll('.approve').forEach(b=>b.onclick=()=>{
+    if(b.disabled)return;
+    if(confirm('Duyệt yêu cầu này và TRỪ XU của bé?')){
+      if(approveRedemption(b.dataset.p,b.dataset.id))render();
+    }
+  });
+  root.querySelectorAll('.reject').forEach(b=>b.onclick=()=>{
+    if(confirm('Từ chối yêu cầu này? (chưa trừ xu nên không cần hoàn)')){
+      rejectRedemption(b.dataset.p,b.dataset.id);render();
+    }
+  });
   root.querySelectorAll('.deliver').forEach(b=>b.onclick=()=>{
-    if(confirm(`Đánh dấu "${b.closest('div').querySelector('p').textContent}" đã trao?`)){
+    if(confirm('Đánh dấu quà này đã trao tay?')){
       markDelivered(b.dataset.p,b.dataset.id);render();
     }
   });
@@ -1878,7 +1922,7 @@ function renderQuiz(){
   root.innerHTML=`<div class="bar">
     <div class="btn gray" id="exit">← Thoát</div>
     <div class="namebar"><p class="nm">Câu ${state.qIndex+1} / ${total}</p></div>
-    <span style="color:#D97706;font-weight:600;display:inline-flex;align-items:center;gap:4px;font-size:13px">⭐ ${state.points} đ${state.level!=='basic'?' <span style="font-size:9px;background:#EF4444;color:white;padding:1px 5px;border-radius:99px;font-weight:600">×2</span>':''}</span>
+    <span style="color:#D97706;font-weight:600;display:inline-flex;align-items:center;gap:4px;font-size:13px">⭐ ${state.points} đ${state.level==='advanced'?' <span style="font-size:9px;background:#FB923C;color:white;padding:1px 5px;border-radius:99px;font-weight:600">×3</span>':state.level==='exam'?' <span style="font-size:9px;background:#DC2626;color:white;padding:1px 5px;border-radius:99px;font-weight:600">×5</span>':''}</span>
   </div>
   <div class="progress"><div style="width:${pct}%"></div></div>
   <div class="panel">${visual}<div class="choices">${choices}</div>${exBox}</div>`;
@@ -1893,8 +1937,10 @@ function pick(i){
   const ms=Date.now()-(state.qStartTime||Date.now());
   state.times.push(ms);
   const q=state.questions[state.qIndex];const correct=i===q.answerIndex;
-  const isHard=state.level!=='basic'; // advanced + exam = câu khó
-  const ptsThis=correct?(isHard?2:1):-1;
+  // Thang điểm: Cơ bản 1 / Nâng cao 3 / CLC 5 xu/đúng. Sai luôn -1.
+  const ppCorrect=state.level==='basic'?1:state.level==='advanced'?3:5;
+  const isHard=state.level!=='basic';
+  const ptsThis=correct?ppCorrect:-1;
   state.points+=ptsThis;
   if(correct){state.correct++;state.score++;celebrate()}else{state.wrong++;state.wrongQs.push({q,picked:i})}
   render();
@@ -1913,7 +1959,7 @@ function pick(i){
       logAttempt(p,{d:new Date().toISOString().slice(0,10),s:state.subj,tid:state.topic.id,tn:state.topic.t,c:state.correct,w:state.wrong,pts:state.points,lv:state.level,ms:avgMs,sus,t:Date.now()});
       const newStreak=checkInToday(p);
       state.newAch=checkUnlocks(p);
-      state.lastResult={title:state.topic.t,correct:state.correct,wrong:state.wrong,total:state.questions.length,points:state.points,isHard,replayed,coinsNet:net,coinsReal:realDelta,newBal:newCoins,streak:newStreak,floored:net!==realDelta,wrongQs:state.wrongQs.slice(),avgMs,sus};
+      state.lastResult={title:state.topic.t,correct:state.correct,wrong:state.wrong,total:state.questions.length,points:state.points,isHard,ppCorrect,level:state.level,replayed,coinsNet:net,coinsReal:realDelta,newBal:newCoins,streak:newStreak,floored:net!==realDelta,wrongQs:state.wrongQs.slice(),avgMs,sus};
       // Mark topic done today
       const today=new Date().toISOString().slice(0,10);
       const doneKey='done_'+p+'_'+today;
@@ -1940,13 +1986,14 @@ function renderResult(){
   const e=ratio===1?'🏆':ratio>=.5?'🎈':'🌻';
   const m=ratio===1?'Hoàn hảo! Bé đúng tất cả!':ratio>=.7?'Rất giỏi!':ratio>=.4?'Khá lắm!':'Đừng buồn nhé!';
   const net=r.coinsNet||0,real=r.coinsReal||0;
-  const pp=r.isHard?2:1;
-  const breakdown=`Đúng ${r.correct} × ${pp}đ = +${r.correct*pp} · Sai ${r.wrong} × −1đ = −${r.wrong}`;
+  const pp=r.ppCorrect||(r.isHard?3:1);
+  const lvName=r.level==='basic'?'Cơ bản':r.level==='advanced'?'Nâng cao':'CLC';
+  const breakdown=`${lvName}: Đúng ${r.correct} × ${pp}đ = +${r.correct*pp} · Sai ${r.wrong} × −1đ = −${r.wrong}`;
   let coinBox='';
   if(r.replayed){
     coinBox=`<div class="points-earn" style="background:linear-gradient(135deg,#7C3AED,#5B21B6)"><span class="big">🔄 Làm lại</span><span class="sm">${breakdown}<br>Bài này đã làm hôm nay rồi — không cộng xu nhé!<br>Ví giữ nguyên: ${r.newBal} 🪙 · 🔥 ${r.streak}</span></div>`;
   }
-  else if(net>0)coinBox=`<div class="points-earn" style="background:linear-gradient(135deg,#FBBF24,#F59E0B)"><span class="big">+${real} 🪙</span><span class="sm">${breakdown}${r.floored?' · Sàn 0':''}<br>Ví: ${r.newBal} 🪙 · 🔥 ${r.streak}${r.isHard?' · 🔥 Câu khó ×2':''}</span></div>`;
+  else if(net>0)coinBox=`<div class="points-earn" style="background:linear-gradient(135deg,#FBBF24,#F59E0B)"><span class="big">+${real} 🪙</span><span class="sm">${breakdown}${r.floored?' · Sàn 0':''}<br>Ví: ${r.newBal} 🪙 · 🔥 ${r.streak}${pp>1?' · 🔥 ×'+pp+' xu':''}</span></div>`;
   else if(net===0)coinBox=`<div class="points-earn" style="background:linear-gradient(135deg,#9CA3AF,#6B7280)"><span class="big">±0 🪙</span><span class="sm">${breakdown}<br>Ví: ${r.newBal} 🪙 · 🔥 ${r.streak}</span></div>`;
   else coinBox=`<div class="points-earn" style="background:linear-gradient(135deg,#F87171,#EF4444)"><span class="big">${real} 🪙</span><span class="sm">${breakdown}${r.floored?' · Sàn 0':''}<br>Ví: ${r.newBal} 🪙 · 🔥 ${r.streak}</span></div>`;
   root.innerHTML=`<div class="result">
@@ -1959,7 +2006,6 @@ function renderResult(){
     <br><button class="btn-go" id="cont">Tiếp tục 🚀</button>
   </div>`;
   root.querySelector('#cont').onclick=()=>{state.topic=null;state.screen='topics';render()};
-  const revBtn=root.querySelector('#rev');if(revBtn)revBtn.onclick=()=>{state.screen='review';render()};
   if(state.newAch&&state.newAch.length)setTimeout(showAchModal,500);
 }
 
